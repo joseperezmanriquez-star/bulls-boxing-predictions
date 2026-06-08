@@ -5,19 +5,29 @@
   <%- include('partials/head') %>
 </head>
 <body>
-  <div class="container">
-    <div class="brand-bar">
-      <span class="tag">&#129354; Bulls Training &mdash; La Serena / Coquimbo</span>
-      <a class="ig-link" href="https://www.instagram.com/bulls_training/" target="_blank" rel="noopener">&#128247; @bulls_training</a>
+  <section class="hero">
+    <div class="hero-content">
+      <div class="brand-bar">
+        <span class="tag">&#129354; Bulls Training &mdash; La Serena / Coquimbo</span>
+        <a class="ig-link" href="https://www.instagram.com/bulls_training/" target="_blank" rel="noopener">&#128247; @bulls_training</a>
+      </div>
+      <p class="hero-kicker">Pronosticos de Boxeo</p>
+      <h1 class="hero-title">
+        Entra al ring.<br>
+        Confia en tu olfato.<br>
+        <span class="accent">Gana con Bulls.</span>
+      </h1>
+      <p class="hero-sub">
+        Cada pronostico es un golpe. Cada acierto, una victoria. Registrate gratis,
+        entrena tu instinto para el boxeo y vive cada pelea sintiendo la misma garra
+        de quien entrena para subir al cuadrilatero.
+      </p>
+      <a href="#form-registro" class="btn-cta">&#129354; Quiero participar ahora</a>
     </div>
-    <h1>Pronosticos de Boxeo &mdash; Bulls</h1>
-    <p class="lead">
-      Sube al ring de los pronosticos. Ingresa tus datos para participar &mdash; no necesitas crear una cuenta.
-      Una vez que tus datos sean revisados, te asignaremos un saldo de <strong>Bulls</strong>
-      (moneda interna sin valor monetario real) y recibiras un link personal para pronosticar
-      con la garra de quien entrena para ganar.
-    </p>
+    <img class="hero-illustration" src="/img/boxer-hero.svg" alt="Boxeador en pose de combate lanzando un golpe">
+  </section>
 
+  <div class="container">
     <% if (error) { %>
       <div class="alert alert-error"><%= error %></div>
     <% } %>
@@ -27,6 +37,7 @@
       (RUT 78.078.914-K). Contacto: Infobullstraining@gmail.com
     </p>
 
+    <h2 id="form-registro" class="form-heading">&#129354; Tu lugar en el ring te espera &mdash; completa tus datos</h2>
     <form method="post" action="/registro" class="card">
       <label>Nombre completo
         <input type="text" name="name" required>
