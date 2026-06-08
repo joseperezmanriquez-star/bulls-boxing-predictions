@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 
-const ADMIN_EMAIL = 'bullstrainingbet@gmail.com';
+const ADMIN_EMAIL = 'bullstrainingbet@gmail.com, Infobullstraining@gmail.com';
 
 let transporter = null;
 if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
