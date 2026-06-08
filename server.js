@@ -3,18 +3,7 @@ require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const http = require('http');
-const multer = require('multer');
 const { Server } = require('socket.io');
-
-// Documento de identidad: se procesa en memoria y se reenvia por correo, nunca se guarda en disco
-const idUpload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 8 * 1024 * 1024 },
-  fileFilter(req, file, cb) {
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-    cb(null, allowed.includes(file.mimetype));
-  },
-});
 
 const db = require('./db');
 const mailer = require('./mailer');
@@ -41,16 +30,13 @@ app.get('/', (req, res) => {
   res.render('registro', { error: null });
 });
 
-app.post('/registro', idUpload.single('idDocument'), async (req, res) => {
+app.post('/registro', async (req, res) => {
   const { name, rut, address, email, phone, comments } = req.body;
   if (!name || !rut || !address || !email || !phone) {
     return res.render('registro', { error: 'Por favor completa todos los campos obligatorios.' });
   }
   const user = db.createUser({ name, rut, address, email, phone, comments });
-  const attachment = req.file
-    ? { filename: req.file.originalname, content: req.file.buffer, contentType: req.file.mimetype }
-    : null;
-  await mailer.notifyNewRegistration({ user, attachment });
+  await mailer.notifyNewRegistration({ user });
   res.redirect('/espera/' + user.id);
 });
 

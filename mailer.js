@@ -77,7 +77,7 @@ function notifySettlementResult({ user, fight, fighter, bulls, result, payout })
   return sendMail({ to: user.email, subject, text });
 }
 
-function notifyNewRegistration({ user, attachment }) {
+function notifyNewRegistration({ user }) {
   const subject = `Nuevo registro pendiente de validacion: ${user.name}`;
   const text = [
     `Se registro una nueva persona y esta a la espera de validacion.`,
@@ -89,11 +89,10 @@ function notifyNewRegistration({ user, attachment }) {
     `Correo: ${user.email}`,
     `Telefono: ${user.phone}`,
     `Comentarios: ${user.comments || '(sin comentarios)'}`,
-    attachment ? `Documento de identidad adjunto: ${attachment.filename}` : `Documento de identidad: no adjunto`,
     ``,
     `Ingresa al panel de administracion para validarlo y asignarle Bulls.`,
   ].join('\n');
-  return sendMail({ to: ADMIN_EMAIL, subject, text, attachments: attachment ? [attachment] : [] });
+  return sendMail({ to: ADMIN_EMAIL, subject, text });
 }
 
 function notifyAccessGranted({ user, link }) {
