@@ -18,7 +18,7 @@
     <select id="fightSelect" class="monitor-select"></select>
     <h1 id="fightTitle" class="monitor-title"><img class="title-glove" src="/img/glove.svg" alt="">Cargando...</h1>
     <div class="monitor-chart-wrap">
-      <canvas id="monitorChart" width="640" height="640"></canvas>
+      <canvas id="monitorChart"></canvas>
     </div>
     <div id="monitorPercentages" class="monitor-pct"></div>
   </div>
@@ -149,8 +149,9 @@
             datasets: [{ data: values, backgroundColor: ['#c0392b', '#2980b9'] }]
           },
           options: {
-            responsive: false,
-            plugins: { legend: { labels: { font: { size: 22 } } } }
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { labels: { font: { size: 18 }, color: '#f1ece6' } } }
           }
         });
       }
