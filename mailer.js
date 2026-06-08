@@ -1,9 +1,56 @@
 const nodemailer = require('nodemailer');
+const https = require('https');
 
 const ADMIN_EMAIL = 'bullstrainingbet@gmail.com, Infobullstraining@gmail.com';
 
+// ---------------------------------------------------------------------------
+// Brevo HTTP API (puerto 443, funciona en Render free tier)
+// ---------------------------------------------------------------------------
+function sendViaBrevoAPI({ to, subject, text }) {
+  return new Promise((resolve, reject) => {
+    const recipients = to.split(',').map((e) => ({ email: e.trim() }));
+    const body = Buffer.from(JSON.stringify({
+      sender: {
+        name: process.env.BREVO_SENDER_NAME || 'Bulls Training',
+        email: process.env.BREVO_SENDER_EMAIL || process.env.SMTP_FROM || process.env.SMTP_USER,
+      },
+      to: recipients,
+      subject,
+      textContent: text,
+    }));
+
+    const req = https.request({
+      hostname: 'api.brevo.com',
+      path: '/v3/smtp/email',
+      method: 'POST',
+      headers: {
+        'api-key': process.env.BREVO_API_KEY,
+        'Content-Type': 'application/json',
+        'Content-Length': body.length,
+      },
+    }, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          console.log(`[correo enviado via Brevo API] para=${to} asunto="${subject}"`);
+          resolve();
+        } else {
+          reject(new Error(`Brevo API ${res.statusCode}: ${data}`));
+        }
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+// ---------------------------------------------------------------------------
+// SMTP fallback (para desarrollo local)
+// ---------------------------------------------------------------------------
 let transporter = null;
-if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+if (!process.env.BREVO_API_KEY && process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
   transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT || 587),
@@ -12,69 +59,25 @@ if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
   });
 }
 
-async function sendMail({ to, subject, text, html, attachments }) {
-  if (!transporter) {
-    console.log('--- [correo simulado: configura SMTP_HOST/SMTP_USER/SMTP_PASS para enviar de verdad] ---');
-    console.log('Para:', to);
-    console.log('Asunto:', subject);
-    console.log(text);
-    if (attachments && attachments.length) console.log(`Adjuntos: ${attachments.map((a) => a.filename).join(', ')}`);
-    console.log('---------------------------------------------------------------------------------------');
-    return;
+async function sendMail({ to, subject, text }) {
+  if (process.env.BREVO_API_KEY) {
+    return sendViaBrevoAPI({ to, subject, text });
   }
-  try {
+
+  if (transporter) {
     const info = await transporter.sendMail({
       from: process.env.SMTP_FROM || process.env.SMTP_USER,
-      to, subject, text, html, attachments,
+      to, subject, text,
     });
     console.log(`[correo enviado via SMTP] para=${to} asunto="${subject}" messageId=${info.messageId}`);
-  } catch (err) {
-    console.error(`[ERROR enviando correo via SMTP] para=${to} asunto="${subject}":`, err.message);
-    throw err;
+    return;
   }
-}
 
-function notifyPredictionConfirmation({ user, fight, fighter, bulls }) {
-  const subject = `Confirmacion de tu pronostico: ${fight.fighterA} vs ${fight.fighterB}`;
-  const text = [
-    `Hola ${user.name},`,
-    ``,
-    `Registramos tu pronostico correctamente.`,
-    ``,
-    `Pelea: ${fight.fighterA} vs ${fight.fighterB} (${fight.date})`,
-    `Tu pronostico: ${fighter}`,
-    `Bulls arriesgados: ${bulls}`,
-    `Saldo restante: ${user.bulls} Bulls`,
-    ``,
-    `Te avisaremos por correo cuando la pelea finalice con el resultado.`,
-  ].join('\n');
-  return sendMail({ to: user.email, subject, text });
-}
-
-function notifySettlementResult({ user, fight, fighter, bulls, result, payout }) {
-  let subject;
-  let resultLine;
-  if (result === 'won') {
-    subject = `Ganaste tu pronostico: ${fight.fighterA} vs ${fight.fighterB}`;
-    resultLine = `Acertaste tu pronostico por ${fighter} y ganaste ${payout} Bulls.`;
-  } else if (result === 'refunded') {
-    subject = `Pelea sin contrincante: se reembolsaron tus Bulls`;
-    resultLine = `Nadie aposto por el peleador contrario, asi que se te reembolsaron tus ${payout} Bulls.`;
-  } else {
-    subject = `Resultado de tu pronostico: ${fight.fighterA} vs ${fight.fighterB}`;
-    resultLine = `Esta vez no acertaste tu pronostico por ${fighter}.`;
-  }
-  const text = [
-    `Hola ${user.name},`,
-    ``,
-    `La pelea ${fight.fighterA} vs ${fight.fighterB} (${fight.date}) ya finalizo.`,
-    `Gano: ${fight.noContest ? 'sin contrincante (reembolso a todos)' : fight.winner}`,
-    ``,
-    resultLine,
-    `Tu pronostico: ${fighter} (${bulls} Bulls)`,
-    `Tu saldo actual: ${user.bulls} Bulls`,
-  ].join('\n');
-  return sendMail({ to: user.email, subject, text });
+  console.log('--- [correo simulado: agrega BREVO_API_KEY en Render para enviar de verdad] ---');
+  console.log('Para:', to);
+  console.log('Asunto:', subject);
+  console.log(text);
+  console.log('--------------------------------------------------------------------------------');
 }
 
 function notifyNewRegistration({ user }) {
@@ -110,11 +113,53 @@ function notifyAccessGranted({ user, link }) {
   return sendMail({ to: user.email, subject, text });
 }
 
+function notifyPredictionConfirmation({ user, fight, fighter, bulls }) {
+  const subject = `Confirmacion de tu pronostico: ${fight.fighterA} vs ${fight.fighterB}`;
+  const text = [
+    `Hola ${user.name},`,
+    ``,
+    `Registramos tu pronostico correctamente.`,
+    ``,
+    `Pelea: ${fight.fighterA} vs ${fight.fighterB} (${fight.date})`,
+    `Tu pronostico: ${fighter}`,
+    `Bulls arriesgados: ${bulls}`,
+    `Saldo restante: ${user.bulls} Bulls`,
+    ``,
+    `Te avisaremos por correo cuando la pelea finalice con el resultado.`,
+  ].join('\n');
+  return sendMail({ to: user.email, subject, text });
+}
+
+function notifySettlementResult({ user, fight, fighter, bulls, result, payout }) {
+  let subject, resultLine;
+  if (result === 'won') {
+    subject = `Ganaste tu pronostico: ${fight.fighterA} vs ${fight.fighterB}`;
+    resultLine = `Acertaste tu pronostico por ${fighter} y ganaste ${payout} Bulls.`;
+  } else if (result === 'refunded') {
+    subject = `Pelea sin contrincante: se reembolsaron tus Bulls`;
+    resultLine = `Nadie aposto por el peleador contrario, asi que se te reembolsaron tus ${payout} Bulls.`;
+  } else {
+    subject = `Resultado de tu pronostico: ${fight.fighterA} vs ${fight.fighterB}`;
+    resultLine = `Esta vez no acertaste tu pronostico por ${fighter}.`;
+  }
+  const text = [
+    `Hola ${user.name},`,
+    ``,
+    `La pelea ${fight.fighterA} vs ${fight.fighterB} (${fight.date}) ya finalizo.`,
+    `Gano: ${fight.noContest ? 'sin contrincante (reembolso a todos)' : fight.winner}`,
+    ``,
+    resultLine,
+    `Tu pronostico: ${fighter} (${bulls} Bulls)`,
+    `Tu saldo actual: ${user.bulls} Bulls`,
+  ].join('\n');
+  return sendMail({ to: user.email, subject, text });
+}
+
 module.exports = {
   sendMail,
   notifyNewRegistration,
+  notifyAccessGranted,
   notifyPredictionConfirmation,
   notifySettlementResult,
-  notifyAccessGranted,
   ADMIN_EMAIL,
 };
