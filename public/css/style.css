@@ -152,6 +152,79 @@ th { background: #2a211b; color: #e8b923; text-transform: uppercase; font-size: 
 
 .chart-block { display: inline-block; margin: 16px 24px 16px 0; text-align: center; }
 
+/* Pagina de apuestas del usuario */
+.user-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.user-greeting { margin-bottom: 2px; }
+.user-balance { color: #cfc6bd; margin: 0 0 20px; }
+.balance-amount { color: #e8b923; font-weight: 700; font-size: 1.1em; }
+
+.fight-card { padding: 20px; margin: 20px 0; }
+.fight-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #3a2f28;
+}
+.fight-title {
+  font-size: 1.3em;
+  margin: 0 0 4px;
+  border: none;
+  padding: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.vs-badge {
+  color: #e8b923;
+  font-size: 0.75em;
+  background: #2a1f18;
+  border: 1px solid #e8b923;
+  border-radius: 4px;
+  padding: 1px 6px;
+  vertical-align: middle;
+  margin: 0 4px;
+}
+.fight-card-body {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 24px;
+  align-items: start;
+}
+.fight-card-left { display: flex; flex-direction: column; gap: 14px; }
+.fight-card-right { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+
+.my-preds { }
+.my-preds-title { margin: 0 0 8px; color: #e8b923; font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.bet-form-inner {
+  background: #14100d;
+  border: 1px solid #3a2f28;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 0;
+}
+
+.dist-title { margin: 0 0 10px; color: #e8b923; font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
+.dist-chart-wrap { display: flex; justify-content: center; }
+.dist-legend { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.dist-leg-item { display: flex; align-items: center; gap: 8px; font-size: 0.88em; color: #cfc6bd; }
+.dist-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.dist-dot-a { background: #d8261c; }
+.dist-dot-b { background: #e8b923; }
+
+@media (max-width: 680px) {
+  .fight-card-body { grid-template-columns: 1fr; }
+  .fight-card-right { align-items: flex-start; }
+}
+
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));

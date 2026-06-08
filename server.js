@@ -79,12 +79,21 @@ app.get('/espera/:id', (req, res) => {
 // ---------------------------------------------------------------------------
 // Acceso personal para pronosticar (link unico enviado por correo)
 // ---------------------------------------------------------------------------
+function buildApostarData(token) {
+  const user = db.getUserByToken(token);
+  if (!user) return null;
+  const fights = db.listFights();
+  const stats = {};
+  fights.forEach((f) => { stats[f.id] = db.fightStats(f.id); });
+  const allPreds = db.listPredictions();
+  const userPredictions = allPreds.filter((p) => p.userId === user.id);
+  return { user, token, fights, stats, userPredictions };
+}
+
 app.get('/apostar/:token', (req, res) => {
-  const user = db.getUserByToken(req.params.token);
-  if (!user) return res.status(404).send('Link invalido o expirado.');
-  res.render('apostar', {
-    user, token: req.params.token, fights: db.listFights(), message: null, error: null,
-  });
+  const data = buildApostarData(req.params.token);
+  if (!data) return res.status(404).send('Link invalido o expirado.');
+  res.render('apostar', { ...data, message: null, error: null });
 });
 
 app.post('/apostar/:token', async (req, res) => {
@@ -95,9 +104,10 @@ app.post('/apostar/:token', async (req, res) => {
   const fight = db.getFight(fightId);
   const amount = parseInt(bulls, 10);
 
-  const renderWith = (error, message) => res.render('apostar', {
-    user: db.getUser(user.id), token: req.params.token, fights: db.listFights(), message, error,
-  });
+  const renderWith = (error, message) => {
+    const data = buildApostarData(req.params.token);
+    return res.render('apostar', { ...data, message, error });
+  };
 
   if (!fight) return renderWith('Pelea no encontrada.', null);
   if (fight.status !== 'open') return renderWith('Esta pelea ya no acepta pronosticos.', null);
@@ -119,7 +129,7 @@ app.post('/apostar/:token', async (req, res) => {
     .catch((err) => console.error('[mailer] Error al notificar pronostico:', err.message));
   broadcastFightStats(fight.id);
 
-  return res.redirect('/monitor');
+  return renderWith(null, `Pronostico registrado: ${fighter} en ${fight.fighterA} vs ${fight.fighterB}.`);
 });
 
 // ---------------------------------------------------------------------------
