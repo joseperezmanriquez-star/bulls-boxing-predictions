@@ -3,6 +3,8 @@ const https = require('https');
 
 const ADMIN_EMAIL = 'bullstrainingbet@gmail.com, Infobullstraining@gmail.com';
 
+const fmt = (n) => Number(n || 0).toLocaleString('es-CL');
+
 // ---------------------------------------------------------------------------
 // Brevo HTTP API (puerto 443, funciona en Render free tier)
 // ---------------------------------------------------------------------------
@@ -103,7 +105,7 @@ function notifyAccessGranted({ user, link }) {
   const text = [
     `Hola ${user.name},`,
     ``,
-    `Tus datos fueron validados y se te asignaron ${user.bulls} Bulls para pronosticar.`,
+    `Tus datos fueron validados y se te asignaron ${fmt(user.bulls)} Bulls para pronosticar.`,
     `Ingresa con tu link personal para ver las peleas disponibles y registrar tu pronostico:`,
     ``,
     link,
@@ -126,8 +128,8 @@ function notifyPredictionConfirmation({ user, fight, fighter, bulls }) {
     ``,
     `Pelea: ${fight.fighterA} vs ${fight.fighterB} (${fight.date})`,
     `Tu pronostico: ${fighter}`,
-    `Bulls arriesgados: ${bulls}`,
-    `Saldo restante: ${user.bulls} Bulls`,
+    `Bulls arriesgados: ${fmt(bulls)}`,
+    `Saldo restante: ${fmt(user.bulls)} Bulls`,
     ``,
     `Te avisaremos por correo cuando la pelea finalice con el resultado.`,
     ``,
@@ -138,26 +140,31 @@ function notifyPredictionConfirmation({ user, fight, fighter, bulls }) {
 
 function notifySettlementResult({ user, fight, fighter, bulls, result, payout }) {
   let subject, resultLine;
+  let paymentNote = '';
   if (result === 'won') {
     subject = `Ganaste tu pronostico: ${fight.fighterA} vs ${fight.fighterB}`;
-    resultLine = `Acertaste tu pronostico por ${fighter} y ganaste ${payout} Bulls.`;
+    resultLine = `Acertaste tu pronostico por ${fighter} y ganaste ${fmt(payout)} Bulls.`;
+    paymentNote = `El pago de tus ganancias se realizara via transferencia bancaria en un plazo de 1 a 48 horas habiles.`;
   } else if (result === 'refunded') {
     subject = `Pelea sin contrincante: se reembolsaron tus Bulls`;
-    resultLine = `Nadie aposto por el peleador contrario, asi que se te reembolsaron tus ${payout} Bulls.`;
+    resultLine = `Nadie aposto por el peleador contrario, asi que se te reembolsaron tus ${fmt(payout)} Bulls.`;
+    paymentNote = `El reembolso se realizara via transferencia bancaria en un plazo de 1 a 48 horas habiles.`;
   } else {
     subject = `Resultado de tu pronostico: ${fight.fighterA} vs ${fight.fighterB}`;
     resultLine = `Esta vez no acertaste tu pronostico por ${fighter}.`;
   }
-  const text = [
+  const lines = [
     `Hola ${user.name},`,
     ``,
     `La pelea ${fight.fighterA} vs ${fight.fighterB} (${fight.date}) ya finalizo.`,
     `Gano: ${fight.noContest ? 'sin contrincante (reembolso a todos)' : fight.winner}`,
     ``,
     resultLine,
-    `Tu pronostico: ${fighter} (${bulls} Bulls)`,
-    `Tu saldo actual: ${user.bulls} Bulls`,
-  ].join('\n');
+    `Tu pronostico: ${fighter} (${fmt(bulls)} Bulls)`,
+    `Tu saldo actual: ${fmt(user.bulls)} Bulls`,
+  ];
+  if (paymentNote) { lines.push(''); lines.push(paymentNote); }
+  const text = lines.join('\n');
   return sendMail({ to: user.email, subject, text });
 }
 
