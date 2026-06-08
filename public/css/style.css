@@ -158,10 +158,24 @@ th { background: #2a211b; color: #e8b923; text-transform: uppercase; font-size: 
   color: #fff;
   height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  margin: 0;
+  overflow: hidden;
 }
-.monitor-wrap { text-align: center; }
+.monitor-wrap { text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.monitor-clock {
+  font-size: 1.05em;
+  letter-spacing: 0.5px;
+  color: #cfc6bd;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid #3a2f28;
+  border-radius: 20px;
+  padding: 6px 18px;
+  margin-bottom: 14px;
+  display: inline-block;
+}
 .monitor-title { font-size: 2.4em; margin: 8px 0; text-transform: uppercase; letter-spacing: 1px; color: #e8b923; }
 .monitor-select {
   font-size: 1.1em;
@@ -207,3 +221,69 @@ th { background: #2a211b; color: #e8b923; text-transform: uppercase; font-size: 
 .btn-hacker:hover { background: #143820; box-shadow: 0 0 8px rgba(57, 255, 106, 0.5); }
 .btn-hacker-stop { color: #ff5c5c; border-color: #ff5c5c; }
 .btn-hacker-stop:hover { background: #3a1414; box-shadow: 0 0 8px rgba(255, 92, 92, 0.5); }
+
+.ticker {
+  width: 100%;
+  background: linear-gradient(90deg, #1f1916, #2a211b);
+  border-top: 2px solid #d8261c;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.ticker-label {
+  flex-shrink: 0;
+  background: linear-gradient(120deg, #d8261c, #a31810);
+  color: #fff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.85em;
+  padding: 12px 20px;
+  white-space: nowrap;
+}
+.ticker-viewport {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.ticker-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: ticker-scroll 35s linear infinite;
+  padding: 12px 0;
+}
+.ticker-item { color: #f1ece6; font-size: 1em; padding: 0 8px; }
+.ticker-item .vs { color: #e8b923; font-weight: 700; }
+.ticker-status { color: #7fe3a3; font-weight: 600; }
+.ticker-sep { color: #d8261c; padding: 0 18px; }
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.ring-corner {
+  position: fixed;
+  width: 110px;
+  height: auto;
+  opacity: 0.16;
+  z-index: 0;
+  pointer-events: none;
+}
+.corner-tl { top: 0; left: 0; }
+.corner-tr { top: 0; right: 0; transform: scaleX(-1); }
+.corner-bl { bottom: 0; left: 0; transform: scaleY(-1); }
+.corner-br { bottom: 0; right: 0; transform: scale(-1, -1); }
+
+.title-glove {
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.15em;
+  margin-right: 12px;
+  filter: drop-shadow(0 0 6px rgba(216, 38, 28, 0.6));
+}
+.pct-glove {
+  width: 22px;
+  height: 22px;
+}
+.pct-glove-1 { filter: hue-rotate(140deg); }

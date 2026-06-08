@@ -7,13 +7,26 @@
   <script src="/socket.io/socket.io.js"></script>
 </head>
 <body class="monitor-body">
+  <img class="ring-corner corner-tl" src="/img/ring-corner.svg" alt="">
+  <img class="ring-corner corner-tr" src="/img/ring-corner.svg" alt="">
+  <img class="ring-corner corner-bl" src="/img/ring-corner.svg" alt="">
+  <img class="ring-corner corner-br" src="/img/ring-corner.svg" alt="">
+
   <div class="monitor-wrap">
+    <div id="monitorClock" class="monitor-clock"></div>
     <select id="fightSelect" class="monitor-select"></select>
-    <h1 id="fightTitle" class="monitor-title">Selecciona una pelea</h1>
+    <h1 id="fightTitle" class="monitor-title"><img class="title-glove" src="/img/glove.svg" alt="">Selecciona una pelea</h1>
     <div class="monitor-chart-wrap">
       <canvas id="monitorChart" width="640" height="640"></canvas>
     </div>
     <div id="monitorPercentages" class="monitor-pct"></div>
+  </div>
+
+  <div class="ticker">
+    <div class="ticker-label">&#129354; Proximas peleas</div>
+    <div class="ticker-viewport">
+      <div id="tickerTrack" class="ticker-track"></div>
+    </div>
   </div>
 
   <script>
@@ -25,6 +38,32 @@
     const select = document.getElementById('fightSelect');
     const title = document.getElementById('fightTitle');
     const pctBox = document.getElementById('monitorPercentages');
+    const clockBox = document.getElementById('monitorClock');
+    const tickerTrack = document.getElementById('tickerTrack');
+
+    function updateClock() {
+      const now = new Date();
+      const fecha = now.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      const hora = now.toLocaleTimeString('es-CL');
+      clockBox.textContent = fecha.charAt(0).toUpperCase() + fecha.slice(1) + ' — ' + hora;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    function renderTicker() {
+      const proximas = fights.filter(function (f) { return f.status !== 'settled'; });
+      if (!proximas.length) {
+        tickerTrack.innerHTML = '<span class="ticker-item">Por el momento no hay proximas peleas programadas.</span>';
+        return;
+      }
+      const items = proximas.map(function (f) {
+        const estado = f.status === 'open' ? 'Pronosticos abiertos' : 'Apuestas cerradas';
+        return '<span class="ticker-item">&#129354; ' + f.fighterA + ' <span class="vs">vs</span> ' + f.fighterB
+          + ' &nbsp;&middot;&nbsp; ' + f.date + ' &nbsp;&middot;&nbsp; <span class="ticker-status">' + estado + '</span></span>';
+      }).join('<span class="ticker-sep">&#9679;</span>');
+      // Se duplica el contenido para lograr un desplazamiento continuo sin saltos
+      tickerTrack.innerHTML = items + '<span class="ticker-sep">&#9679;</span>' + items + '<span class="ticker-sep">&#9679;</span>';
+    }
 
     select.addEventListener('change', function () {
       currentFightId = Number(select.value);
@@ -45,6 +84,7 @@
         select.value = currentFightId;
         requestStats();
       }
+      renderTicker();
     });
 
     socket.on('stats', function (s) {
@@ -55,7 +95,7 @@
       const pcts = labels.map(function (l) { return s.percentages[l]; });
 
       pctBox.innerHTML = labels.map(function (l, i) {
-        return '<div class="monitor-pct-item"><span class="dot dot-' + i + '"></span>' + l + ': <strong>' + pcts[i] + '%</strong> (' + values[i].toLocaleString('es-CL') + ' Bulls)</div>';
+        return '<div class="monitor-pct-item"><img class="pct-glove pct-glove-' + i + '" src="/img/glove.svg" alt="">' + l + ': <strong>' + pcts[i] + '%</strong> (' + values[i].toLocaleString('es-CL') + ' Bulls)</div>';
       }).join('');
 
       if (chart) {

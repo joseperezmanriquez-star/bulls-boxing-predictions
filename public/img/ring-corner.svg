@@ -1,0 +1,8 @@
+<svg viewBox="0 0 140 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Esquina de cuadrilatero de boxeo">
+  <rect x="58" y="0" width="24" height="220" fill="#3a2f28"/>
+  <circle cx="70" cy="26" r="18" fill="#e8b923"/>
+  <circle cx="70" cy="26" r="18" fill="none" stroke="#a3850f" stroke-width="3"/>
+  <line x1="0" y1="80" x2="140" y2="80" stroke="#d8261c" stroke-width="7" stroke-linecap="round"/>
+  <line x1="0" y1="135" x2="140" y2="135" stroke="#e8b923" stroke-width="7" stroke-linecap="round"/>
+  <line x1="0" y1="190" x2="140" y2="190" stroke="#d8261c" stroke-width="7" stroke-linecap="round"/>
+</svg>
