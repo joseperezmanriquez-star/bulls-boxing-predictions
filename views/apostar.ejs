@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <title>Bulls Boxing - Pronosticar</title>
+  <%- include('partials/head') %>
+</head>
+<body>
+  <div class="container">
+    <h1>Hola, <%= user.name %></h1>
+    <p class="lead">Tu saldo disponible es de <strong><%= fmt(user.bulls) %> Bulls</strong>.</p>
+
+    <div class="alert alert-info">
+      Importante: el porcentaje de devolucion no esta garantizado, ya que depende de cuantos
+      Bulls se acumulen pronosticando por cada peleador. Del total acumulado en cada pelea se
+      descuenta una <strong>comision del 15% de los Bulls</strong> antes de repartir las ganancias
+      entre quienes acertaron. Si nadie pronostica por el peleador contrario al tuyo, se te
+      devolvera el total de tus Bulls apostados en esa pelea (sin descuento de comision).
+    </div>
+
+    <% if (message) { %>
+      <div class="alert alert-success"><%= message %></div>
+    <% } %>
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <h2>Peleas disponibles</h2>
+    <% if (fights.length === 0) { %>
+      <p class="muted">Todavia no hay peleas publicadas. Vuelve a revisar mas tarde.</p>
+    <% } %>
+    <% fights.forEach(function(fight) { %>
+      <div class="card">
+        <h3><%= fight.fighterA %> vs <%= fight.fighterB %></h3>
+        <p class="muted">Fecha: <%= fight.date %></p>
+        <% if (fight.status === 'open') { %>
+          <form method="post" action="/apostar/<%= token %>" class="bet-form">
+            <input type="hidden" name="fightId" value="<%= fight.id %>">
+            <label>Pronostico a favor de
+              <select name="fighter" required>
+                <option value="<%= fight.fighterA %>"><%= fight.fighterA %></option>
+                <option value="<%= fight.fighterB %>"><%= fight.fighterB %></option>
+              </select>
+            </label>
+            <label>Bulls a arriesgar
+              <input type="number" name="bulls" min="1" max="<%= user.bulls %>" required>
+            </label>
+            <button type="submit" <%= user.bulls <= 0 ? 'disabled' : '' %>>Registrar pronostico</button>
+          </form>
+        <% } else if (fight.status === 'closed') { %>
+          <p class="alert alert-info">Esta pelea ya termino. Las apuestas estan cerradas, en espera del resultado oficial.</p>
+        <% } else { %>
+          <p class="alert alert-success">
+            Pelea finalizada.
+            <% if (fight.noContest) { %>
+              Nadie aposto por uno de los dos peleadores, por lo que se reembolsaron los Bulls a todos los participantes.
+            <% } else { %>
+              Gano <strong><%= fight.winner %></strong>.
+            <% } %>
+          </p>
+        <% } %>
+      </div>
+    <% }) %>
+  </div>
+</body>
+</html>

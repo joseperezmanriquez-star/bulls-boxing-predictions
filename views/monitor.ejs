@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <title>Monitor en vivo - Bulls Boxing</title>
+  <%- include('partials/head') %>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="monitor-body">
+  <div class="monitor-wrap">
+    <select id="fightSelect" class="monitor-select"></select>
+    <h1 id="fightTitle" class="monitor-title">Selecciona una pelea</h1>
+    <div class="monitor-chart-wrap">
+      <canvas id="monitorChart" width="640" height="640"></canvas>
+    </div>
+    <div id="monitorPercentages" class="monitor-pct"></div>
+  </div>
+
+  <script>
+    const socket = io();
+    let chart = null;
+    let fights = [];
+    let currentFightId = null;
+
+    const select = document.getElementById('fightSelect');
+    const title = document.getElementById('fightTitle');
+    const pctBox = document.getElementById('monitorPercentages');
+
+    select.addEventListener('change', function () {
+      currentFightId = Number(select.value);
+      requestStats();
+    });
+
+    function requestStats() {
+      if (currentFightId) socket.emit('subscribe', currentFightId);
+    }
+
+    socket.on('fights', function (list) {
+      fights = list;
+      select.innerHTML = fights.map(function (f) {
+        return '<option value="' + f.id + '">' + f.fighterA + ' vs ' + f.fighterB + ' (' + f.date + ')</option>';
+      }).join('');
+      if (fights.length && !currentFightId) {
+        currentFightId = fights[0].id;
+        select.value = currentFightId;
+        requestStats();
+      }
+    });
+
+    socket.on('stats', function (s) {
+      if (!s || s.fight.id !== currentFightId) return;
+      title.textContent = s.fight.fighterA + ' vs ' + s.fight.fighterB;
+      const labels = Object.keys(s.totals);
+      const values = labels.map(function (l) { return s.totals[l]; });
+      const pcts = labels.map(function (l) { return s.percentages[l]; });
+
+      pctBox.innerHTML = labels.map(function (l, i) {
+        return '<div class="monitor-pct-item"><span class="dot dot-' + i + '"></span>' + l + ': <strong>' + pcts[i] + '%</strong> (' + values[i].toLocaleString('es-CL') + ' Bulls)</div>';
+      }).join('');
+
+      if (chart) {
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = values;
+        chart.update();
+      } else {
+        const ctx = document.getElementById('monitorChart');
+        chart = new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: labels,
+            datasets: [{ data: values, backgroundColor: ['#c0392b', '#2980b9'] }]
+          },
+          options: {
+            responsive: false,
+            plugins: { legend: { labels: { font: { size: 22 } } } }
+          }
+        });
+      }
+    });
+
+    socket.emit('requestFights');
+
+    // Refresca la ventana completa cada 60 segundos
+    setTimeout(function () { location.reload(); }, 60000);
+  </script>
+</body>
+</html>

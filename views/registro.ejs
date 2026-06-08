@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <title>Bulls Boxing - Registro</title>
+  <%- include('partials/head') %>
+</head>
+<body>
+  <div class="container">
+    <h1>Pronosticos de Boxeo &mdash; Bulls</h1>
+    <p class="lead">
+      Ingresa tus datos para participar. No necesitas crear una cuenta.
+      Una vez que tus datos sean revisados, te asignaremos un saldo de <strong>Bulls</strong>
+      (moneda interna sin valor monetario real) y recibiras un link personal para pronosticar.
+    </p>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <p class="muted operator-info">
+      Esta plataforma de pronosticos es operada por <strong>INAREJO Y FUENTES SpA</strong>
+      (RUT 78.078.914-K). Contacto: Infobullstraining@gmail.com
+    </p>
+
+    <form method="post" action="/registro" class="card" enctype="multipart/form-data">
+      <label>Nombre completo
+        <input type="text" name="name" required>
+      </label>
+      <label>RUT
+        <input type="text" name="rut" required placeholder="12.345.678-9">
+      </label>
+      <label>Direccion
+        <input type="text" name="address" required>
+      </label>
+      <label>Correo electronico
+        <input type="email" name="email" required>
+      </label>
+      <label>Telefono
+        <input type="tel" name="phone" required>
+      </label>
+      <label>Comentarios (opcional)
+        <textarea name="comments" rows="3" placeholder="Cualquier comentario que quieras dejarnos..."></textarea>
+      </label>
+      <label>Documento de identidad (opcional, foto o PDF de tu carnet)
+        <input type="file" name="idDocument" accept="image/*,.pdf">
+      </label>
+      <button type="submit">Enviar mis datos</button>
+    </form>
+  </div>
+</body>
+</html>

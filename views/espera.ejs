@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <title>Bulls Boxing - En revision</title>
+  <%- include('partials/head') %>
+</head>
+<body>
+  <div class="container narrow">
+    <h1>Tus datos estan en revision</h1>
+    <div class="card">
+      <p>Gracias, <strong><%= user.name %></strong>. Recibimos tu informacion correctamente.</p>
+      <p>
+        Nuestro equipo va a revisar tus datos y te asignara un saldo de Bulls para pronosticar.
+        Cuando esto ocurra, recibiras un correo a <strong><%= user.email %></strong> con un link
+        personal para acceder a la lista de peleas y registrar tu pronostico.
+      </p>
+      <p class="muted">Puedes cerrar esta pagina. Te avisaremos por correo.</p>
+    </div>
+  </div>
+</body>
+</html>

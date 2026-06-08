@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <title>Admin - Panel</title>
+  <%- include('../partials/head') %>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container wide">
+    <div class="admin-bar">
+      <h1>Panel de administracion</h1>
+      <a href="/admin/logout" class="link">Cerrar sesion</a>
+    </div>
+
+    <% if (message) { %><div class="alert alert-success"><%= message %></div><% } %>
+    <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+
+    <nav class="tabs">
+      <a href="#peleas">Peleas</a>
+      <a href="#usuarios">Usuarios pendientes</a>
+      <a href="#pronosticos">Pronosticos</a>
+      <a href="#graficos">Graficos por pelea</a>
+      <a href="#liquidaciones">Resultados y liquidaciones</a>
+      <a href="/monitor" target="_blank">Abrir monitor en vivo &rarr;</a>
+    </nav>
+
+    <section id="peleas" class="card">
+      <h2>Gestion de peleas</h2>
+      <form method="post" action="/admin/peleas" class="inline-form">
+        <label>Peleador A <input type="text" name="fighterA" required></label>
+        <label>Peleador B <input type="text" name="fighterB" required></label>
+        <label>Fecha <input type="date" name="date" required></label>
+        <button type="submit">Agregar pelea</button>
+      </form>
+      <p class="muted">Comision de la casa sobre el pozo total: <strong>15% de los Bulls apostados</strong>.</p>
+      <table>
+        <thead><tr><th>ID</th><th>Pelea</th><th>Fecha</th><th>Estado</th><th>Accion</th></tr></thead>
+        <tbody>
+          <% fights.forEach(function(f) { %>
+            <tr>
+              <td><%= f.id %></td>
+              <td><%= f.fighterA %> vs <%= f.fighterB %></td>
+              <td><%= f.date %></td>
+              <td>
+                <span class="badge badge-fight-<%= f.status %>">
+                  <% if (f.status === 'open') { %>abierta
+                  <% } else if (f.status === 'closed') { %>apuestas cerradas
+                  <% } else { %>finalizada<% } %>
+                </span>
+                <% if (f.status === 'settled') { %>
+                  <br><span class="muted">Gano: <%= f.noContest ? 'sin contrincante (reembolso)' : f.winner %></span>
+                <% } %>
+              </td>
+              <td>
+                <% if (f.status === 'open') { %>
+                  <form method="post" action="/admin/peleas/<%= f.id %>/cerrar" class="inline-form">
+                    <button type="submit">Cerrar apuestas (pelea terminada)</button>
+                  </form>
+                <% } else if (f.status === 'closed') { %>
+                  <form method="post" action="/admin/peleas/<%= f.id %>/finalizar" class="inline-form">
+                    <label>Ganador
+                      <select name="winner" required>
+                        <option value="<%= f.fighterA %>"><%= f.fighterA %></option>
+                        <option value="<%= f.fighterB %>"><%= f.fighterB %></option>
+                      </select>
+                    </label>
+                    <button type="submit">Declarar ganador y liquidar</button>
+                  </form>
+                <% } else { %>
+                  <span class="muted">Liquidada</span>
+                <% } %>
+                <form method="post" action="/admin/peleas/<%= f.id %>/eliminar" class="inline-form" onsubmit="return confirm('Esto eliminara la pelea y todos sus pronosticos asociados de forma permanente. ¿Continuar?');">
+                  <button type="submit" class="btn-danger">Eliminar pelea</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="liquidaciones" class="card">
+      <h2>Resultados y liquidaciones</h2>
+      <% var settledFights = fights.filter(function(f){ return f.status === 'settled'; }); %>
+      <% if (settledFights.length === 0) { %>
+        <p class="muted">Todavia no hay peleas finalizadas.</p>
+      <% } %>
+      <% settledFights.forEach(function(f) { %>
+        <% var s = settlements[f.id]; %>
+        <div class="settlement-block">
+          <h3><%= f.fighterA %> vs <%= f.fighterB %> (<%= f.date %>)</h3>
+          <% if (f.noContest) { %>
+            <p>Nadie aposto por uno de los dos peleadores: se reembolsaron los Bulls a todos los participantes.</p>
+          <% } else { %>
+            <p>
+              Ganador: <strong><%= f.winner %></strong> &middot;
+              Pozo total: <strong><%= fmt(f.totalPool) %> Bulls</strong> &middot;
+              Comision (15%): <strong><%= fmt(f.commission) %> Bulls</strong> &middot;
+              Pozo neto repartido: <strong><%= fmt(f.totalPool - f.commission) %> Bulls</strong>
+            </p>
+          <% } %>
+
+          <h4 class="winners-heading">&#127942; Lista de ganadores</h4>
+          <% if (s.winners.length === 0 && s.refunded.length === 0) { %>
+            <p class="muted">Nadie acerto en esta pelea.</p>
+          <% } %>
+          <table>
+            <thead><tr><th>Usuario</th><th>RUT</th><th>Correo</th><th>Telefono</th><th>Pronostico</th><th>Bulls apostados</th><th><%= f.noContest ? 'Bulls reembolsados' : 'Bulls ganados' %></th></tr></thead>
+            <tbody>
+              <% (f.noContest ? s.refunded : s.winners).forEach(function(p) { %>
+                <tr>
+                  <td><%= p.user ? p.user.name : '-' %></td>
+                  <td><%= p.user ? p.user.rut : '-' %></td>
+                  <td><%= p.user ? p.user.email : '-' %></td>
+                  <td><%= p.user ? p.user.phone : '-' %></td>
+                  <td><%= p.fighter %></td>
+                  <td><%= fmt(p.bulls) %></td>
+                  <td><%= fmt(p.payout) %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+
+          <% if (!f.noContest) { %>
+            <h4 class="losers-heading">&#128128; Perdedores</h4>
+            <table>
+              <thead><tr><th>Usuario</th><th>RUT</th><th>Correo</th><th>Telefono</th><th>Pronostico</th><th>Bulls apostados</th></tr></thead>
+              <tbody>
+                <% s.losers.forEach(function(p) { %>
+                  <tr>
+                    <td><%= p.user ? p.user.name : '-' %></td>
+                    <td><%= p.user ? p.user.rut : '-' %></td>
+                    <td><%= p.user ? p.user.email : '-' %></td>
+                    <td><%= p.user ? p.user.phone : '-' %></td>
+                    <td><%= p.fighter %></td>
+                    <td><%= fmt(p.bulls) %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          <% } %>
+        </div>
+      <% }) %>
+    </section>
+
+    <section id="usuarios" class="card">
+      <h2>Usuarios &mdash; validacion y asignacion de Bulls</h2>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Nombre</th><th>RUT</th><th>Correo</th><th>Telefono</th><th>Comentarios</th><th>Estado</th><th>Bulls</th><th>Accion</th></tr>
+        </thead>
+        <tbody>
+          <% users.forEach(function(u) { %>
+            <tr>
+              <td><%= u.id %></td>
+              <td><%= u.name %></td>
+              <td><%= u.rut %></td>
+              <td><%= u.email %></td>
+              <td><%= u.phone %></td>
+              <td><%= u.comments || '-' %></td>
+              <td><span class="badge badge-<%= u.status %>"><%= u.status %></span></td>
+              <td><%= fmt(u.bulls) %></td>
+              <td>
+                <% if (u.status === 'pending') { %>
+                  <form method="post" action="/admin/usuarios/<%= u.id %>/validar" class="inline-form">
+                    <input type="number" name="bulls" min="0" placeholder="Bulls a asignar" required>
+                    <button type="submit">Validar y enviar link</button>
+                  </form>
+                <% } else { %>
+                  <form method="post" action="/admin/usuarios/<%= u.id %>/ajustar" class="inline-form">
+                    <input type="number" name="delta" placeholder="+/- Bulls" required>
+                    <button type="submit">Ajustar</button>
+                  </form>
+                <% } %>
+                <form method="post" action="/admin/usuarios/<%= u.id %>/eliminar" class="inline-form"
+                  data-bulls="<%= u.bulls %>" data-bulls-fmt="<%= fmt(u.bulls) %>" onsubmit="return confirmDeleteUser(this)">
+                  <button type="submit" class="btn-danger">Eliminar usuario</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="pronosticos" class="card">
+      <h2>Pronosticos registrados</h2>
+      <table>
+        <thead>
+          <tr><th>Fecha</th><th>Usuario</th><th>RUT</th><th>Correo</th><th>Telefono</th><th>Pelea</th><th>Pronostico por</th><th>Bulls</th></tr>
+        </thead>
+        <tbody>
+          <% predictions.forEach(function(p) { %>
+            <tr>
+              <td><%= new Date(p.createdAt).toLocaleString('es-CL') %></td>
+              <td><%= p.user ? p.user.name : '-' %></td>
+              <td><%= p.user ? p.user.rut : '-' %></td>
+              <td><%= p.user ? p.user.email : '-' %></td>
+              <td><%= p.user ? p.user.phone : '-' %></td>
+              <td><%= p.fight ? (p.fight.fighterA + ' vs ' + p.fight.fighterB) : '-' %></td>
+              <td><%= p.fighter %></td>
+              <td><%= fmt(p.bulls) %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="graficos" class="card">
+      <h2>Distribucion de Bulls por pelea</h2>
+      <% fights.forEach(function(f) { %>
+        <div class="chart-block">
+          <h3><%= f.fighterA %> vs <%= f.fighterB %> (<%= f.date %>)</h3>
+          <canvas id="chart-<%= f.id %>" width="320" height="320"></canvas>
+        </div>
+      <% }) %>
+    </section>
+  </div>
+
+  <script>
+    function confirmDeleteUser(form) {
+      const bulls = Number(form.dataset.bulls || 0);
+      const msg = bulls > 0
+        ? `Atencion: este usuario tiene ${form.dataset.bullsFmt} Bulls de saldo. Si lo eliminas, ese saldo se perdera permanentemente. ¿Continuar de todas formas?`
+        : `Esto eliminara al usuario y todos sus pronosticos asociados de forma permanente. ¿Continuar?`;
+      return confirm(msg);
+    }
+
+    const stats = <%- JSON.stringify(stats) %>;
+    Object.keys(stats).forEach(function (fightId) {
+      const s = stats[fightId];
+      const labels = Object.keys(s.totals);
+      const values = labels.map(function (l) { return s.totals[l]; });
+      const ctx = document.getElementById('chart-' + fightId);
+      if (!ctx) return;
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels.map(function (l, i) { return l + ' (' + s.percentages[l] + '%)'; }),
+          datasets: [{ data: values, backgroundColor: ['#c0392b', '#2980b9'] }]
+        },
+        options: { responsive: false }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <title>Admin - Acceso</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="container narrow">
+    <h1>Acceso administracion</h1>
+    <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+    <form method="post" action="/admin/login" class="card">
+      <label>Clave de administrador
+        <input type="password" name="password" required>
+      </label>
+      <button type="submit">Ingresar</button>
+    </form>
+  </div>
+</body>
+</html>
