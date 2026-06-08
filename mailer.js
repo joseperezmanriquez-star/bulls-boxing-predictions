@@ -163,7 +163,21 @@ function notifySettlementResult({ user, fight, fighter, bulls, result, payout })
     `Tu pronostico: ${fighter} (${fmt(bulls)} Bulls)`,
     `Tu saldo actual: ${fmt(user.bulls)} Bulls`,
   ];
-  if (paymentNote) { lines.push(''); lines.push(paymentNote); }
+  if (paymentNote) {
+    lines.push('');
+    lines.push(paymentNote);
+    lines.push('');
+    lines.push('Para recibir tu pago, responde este correo con los siguientes datos bancarios:');
+    lines.push('');
+    lines.push('  - Nombre completo del titular');
+    lines.push('  - RUT del titular');
+    lines.push('  - Banco');
+    lines.push('  - Tipo de cuenta (corriente, vista, ahorro)');
+    lines.push('  - Numero de cuenta');
+    lines.push('  - Correo electronico asociado a la cuenta');
+    lines.push('');
+    lines.push('Una vez recibidos tus datos procesaremos la transferencia a la brevedad.');
+  }
   const text = lines.join('\n');
   return sendMail({ to: user.email, subject, text });
 }
