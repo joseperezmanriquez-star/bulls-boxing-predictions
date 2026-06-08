@@ -152,6 +152,45 @@ th { background: #2a211b; color: #e8b923; text-transform: uppercase; font-size: 
 
 .chart-block { display: inline-block; margin: 16px 24px 16px 0; text-align: center; }
 
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin: 16px 0 28px;
+}
+.kpi-card {
+  background: #14100d;
+  border: 1px solid #3a2f28;
+  border-top: 3px solid #e8b923;
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kpi-label { text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.78em; color: #9a8f86; }
+.kpi-value { font-size: 1.7em; font-weight: 700; color: #e8b923; }
+.kpi-sub { font-size: 0.8em; color: #cfc6bd; }
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.dash-table-wrap h3, .dash-chart-wrap h3 {
+  margin-top: 0;
+  color: #e8b923;
+  font-size: 0.95em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.dash-chart-wrap { display: flex; flex-direction: column; align-items: center; }
+
+@media (max-width: 900px) {
+  .dash-grid { grid-template-columns: 1fr; }
+}
+
 /* Monitor */
 .monitor-body {
   background-size: cover;

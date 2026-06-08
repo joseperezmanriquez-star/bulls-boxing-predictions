@@ -5,16 +5,64 @@ const crypto = require('crypto');
 const DATA_FILE = path.join(__dirname, 'data', 'db.json');
 const COMMISSION_RATE = 0.15;
 
-function load() {
-  if (!fs.existsSync(DATA_FILE)) {
-    return { users: [], fights: [], predictions: [], nextId: 1 };
+// ---------------------------------------------------------------------------
+// Persistencia: Upstash Redis en produccion, archivo local en desarrollo.
+// Con cache en memoria para que todas las operaciones sigan siendo sincronas.
+// ---------------------------------------------------------------------------
+const USE_REDIS = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
+const REDIS_KEY = 'bulls:db';
+let _redis = null;
+let _cache = null;
+
+if (USE_REDIS) {
+  const { Redis } = require('@upstash/redis');
+  _redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  });
+}
+
+const EMPTY_DB = () => ({ users: [], fights: [], predictions: [], nextId: 1 });
+
+async function initCache() {
+  if (USE_REDIS) {
+    try {
+      const raw = await _redis.get(REDIS_KEY);
+      _cache = raw || EMPTY_DB();
+      console.log('[db] Datos cargados desde Upstash Redis.');
+    } catch (err) {
+      console.error('[db] Error al cargar desde Redis, arrancando vacio:', err.message);
+      _cache = EMPTY_DB();
+    }
+  } else {
+    if (fs.existsSync(DATA_FILE)) {
+      _cache = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+    } else {
+      _cache = EMPTY_DB();
+    }
+    console.log('[db] Datos cargados desde archivo local.');
   }
-  return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+}
+
+function load() {
+  if (_cache) return JSON.parse(JSON.stringify(_cache));
+  // Fallback para rutas de codigo que se ejecuten antes de initCache (no deberia ocurrir)
+  if (!USE_REDIS && fs.existsSync(DATA_FILE)) {
+    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+  }
+  return EMPTY_DB();
 }
 
 function save(data) {
-  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+  _cache = JSON.parse(JSON.stringify(data));
+  if (USE_REDIS) {
+    _redis.set(REDIS_KEY, data).catch((err) =>
+      console.error('[db] Error al persistir en Redis:', err.message)
+    );
+  } else {
+    fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+  }
 }
 
 function nextId(data) {
@@ -23,14 +71,19 @@ function nextId(data) {
   return id;
 }
 
+// ---------------------------------------------------------------------------
+// API de base de datos (sincronas, usan cache en memoria)
+// ---------------------------------------------------------------------------
 const db = {
+  initCache,
+
   // ---- Users ----
   createUser({ name, rut, address, email, phone, comments }) {
     const data = load();
     const user = {
       id: nextId(data),
       name, rut, address, email, phone, comments: comments || '',
-      status: 'pending', // pending | validated
+      status: 'pending',
       bulls: 0,
       accessToken: null,
       createdAt: new Date().toISOString(),
@@ -75,7 +128,6 @@ const db = {
     return user;
   },
 
-  // Removes a user and all of their predictions (cleanup, e.g. duplicates/test entries)
   deleteUser(id) {
     const data = load();
     const idx = data.users.findIndex((u) => u.id === Number(id));
@@ -92,7 +144,7 @@ const db = {
     const fight = {
       id: nextId(data),
       fighterA, fighterB, date,
-      status: 'open', // open | closed
+      status: 'open',
       createdAt: new Date().toISOString(),
     };
     data.fights.push(fight);
@@ -109,7 +161,6 @@ const db = {
     return data.fights.find((f) => f.id === Number(id)) || null;
   },
 
-  // Removes a fight and all of its associated predictions (cleanup, e.g. old/finished fights)
   deleteFight(id) {
     const data = load();
     const idx = data.fights.findIndex((f) => f.id === Number(id));
@@ -120,7 +171,6 @@ const db = {
     return true;
   },
 
-  // Stops accepting new predictions for a fight (fight finished, awaiting official result)
   closeFight(id) {
     const data = load();
     const fight = data.fights.find((f) => f.id === Number(id));
@@ -132,8 +182,6 @@ const db = {
     return fight;
   },
 
-  // Declares the winner, charges the commission and pays out winners proportionally.
-  // If nobody bet on one of the two fighters, it's a no-contest: everyone gets refunded.
   settleFight(id, winner) {
     const data = load();
     const fight = data.fights.find((f) => f.id === Number(id));
@@ -185,7 +233,6 @@ const db = {
     return fight;
   },
 
-  // Detailed breakdown of a settled fight: pool, commission, winners/losers/refunded with payouts
   fightSettlement(id) {
     const data = load();
     const fight = data.fights.find((f) => f.id === Number(id));
@@ -235,7 +282,6 @@ const db = {
     return data.predictions.filter((p) => p.fightId === Number(fightId));
   },
 
-  // Aggregated Bulls per fighter for a given fight
   fightStats(fightId) {
     const fight = db.getFight(fightId);
     if (!fight) return null;

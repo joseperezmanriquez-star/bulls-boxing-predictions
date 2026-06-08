@@ -16,6 +16,7 @@
     <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
 
     <nav class="tabs">
+      <a href="#resumen">Resumen</a>
       <a href="#peleas">Peleas</a>
       <a href="#usuarios">Usuarios pendientes</a>
       <a href="#pronosticos">Pronosticos</a>
@@ -23,6 +24,82 @@
       <a href="#liquidaciones">Resultados y liquidaciones</a>
       <a href="/monitor" target="_blank">Abrir monitor en vivo &rarr;</a>
     </nav>
+
+    <section id="resumen" class="card dash-summary">
+      <h2>Resumen general</h2>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label">Usuarios</span>
+          <span class="kpi-value"><%= summary.totalUsers %></span>
+          <span class="kpi-sub"><%= summary.validatedUsers %> validados &middot; <%= summary.pendingUsers %> pendientes</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Bulls en juego</span>
+          <span class="kpi-value"><%= fmt(summary.bullsInPlay) %></span>
+          <span class="kpi-sub">saldo total de usuarios</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Pronosticos</span>
+          <span class="kpi-value"><%= summary.totalBets %></span>
+          <span class="kpi-sub">apuestas registradas</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Total apostado</span>
+          <span class="kpi-value"><%= fmt(summary.totalWagered) %></span>
+          <span class="kpi-sub">Bulls movidos en todas las peleas</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Comision generada</span>
+          <span class="kpi-value"><%= fmt(summary.commissionEarned) %></span>
+          <span class="kpi-sub">ganancia real de la casa (peleas liquidadas)</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Peleas</span>
+          <span class="kpi-value"><%= fights.length %></span>
+          <span class="kpi-sub"><%= summary.openFights %> abiertas &middot; <%= summary.closedFights %> cerradas &middot; <%= summary.settledFights %> liquidadas</span>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="dash-table-wrap">
+          <h3>Apostado y ganancias por pelea</h3>
+          <table>
+            <thead>
+              <tr><th>Pelea</th><th>Estado</th><th>A favor de A</th><th>A favor de B</th><th>Pozo total</th><th>N&deg; apuestas</th><th>Comision (15%)</th></tr>
+            </thead>
+            <tbody>
+              <% fightRows.forEach(function(r) { %>
+                <tr>
+                  <td><%= r.fighterA %> vs <%= r.fighterB %><br><span class="muted"><%= r.fight.date %></span></td>
+                  <td>
+                    <span class="badge badge-fight-<%= r.fight.status %>">
+                      <% if (r.fight.status === 'open') { %>abierta
+                      <% } else if (r.fight.status === 'closed') { %>cerrada
+                      <% } else { %>liquidada<% } %>
+                    </span>
+                  </td>
+                  <td><%= fmt(r.totalA) %></td>
+                  <td><%= fmt(r.totalB) %></td>
+                  <td><strong><%= fmt(r.totalPool) %></strong></td>
+                  <td><%= r.betsCount %></td>
+                  <td>
+                    <%= fmt(r.commission) %>
+                    <% if (r.fight.status !== 'settled') { %><span class="muted">(estimada)</span><% } %>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (fightRows.length === 0) { %>
+                <tr><td colspan="7" class="muted">Todavia no hay peleas registradas.</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+        <div class="dash-chart-wrap">
+          <h3>Pozo apostado por pelea</h3>
+          <canvas id="dashPoolChart" width="360" height="300"></canvas>
+        </div>
+      </div>
+    </section>
 
     <section id="peleas" class="card">
       <h2>Gestion de peleas</h2>
@@ -240,6 +317,28 @@
         ? `Atencion: este usuario tiene ${form.dataset.bullsFmt} Bulls de saldo. Si lo eliminas, ese saldo se perdera permanentemente. ¿Continuar de todas formas?`
         : `Esto eliminara al usuario y todos sus pronosticos asociados de forma permanente. ¿Continuar?`;
       return confirm(msg);
+    }
+
+    const dashRows = <%- JSON.stringify(fightRows.map(function (r) {
+      return { label: r.fighterA + ' vs ' + r.fighterB, fighterA: r.fighterA, fighterB: r.fighterB, totalA: r.totalA, totalB: r.totalB };
+    })) %>;
+    const dashCtx = document.getElementById('dashPoolChart');
+    if (dashCtx && dashRows.length) {
+      new Chart(dashCtx, {
+        type: 'bar',
+        data: {
+          labels: dashRows.map(function (r) { return r.label; }),
+          datasets: [
+            { label: 'A favor del peleador A', data: dashRows.map(function (r) { return r.totalA; }), backgroundColor: '#c0392b' },
+            { label: 'A favor del peleador B', data: dashRows.map(function (r) { return r.totalB; }), backgroundColor: '#2980b9' },
+          ],
+        },
+        options: {
+          responsive: false,
+          scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
+          plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } },
+        },
+      });
     }
 
     const stats = <%- JSON.stringify(stats) %>;

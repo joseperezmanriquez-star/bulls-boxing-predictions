@@ -154,18 +154,54 @@ app.get('/admin/logout', (req, res) => {
 
 app.get('/admin', adminAuth, (req, res) => {
   const fights = db.listFights();
+  const users = db.listUsers();
+  const predictions = db.listPredictions().slice().reverse();
   const stats = {};
   const settlements = {};
   fights.forEach((f) => {
     stats[f.id] = db.fightStats(f.id);
     if (f.status === 'settled') settlements[f.id] = db.fightSettlement(f.id);
   });
+
+  const fightRows = fights.map((f) => {
+    const s = stats[f.id];
+    const betsCount = predictions.filter((p) => p.fightId === f.id).length;
+    const commission = f.status === 'settled' ? f.commission : Math.round(s.total * 0.15);
+    return {
+      fight: f,
+      fighterA: f.fighterA,
+      fighterB: f.fighterB,
+      totalA: s.totals[f.fighterA],
+      totalB: s.totals[f.fighterB],
+      totalPool: s.total,
+      betsCount,
+      commission,
+    };
+  });
+
+  const summary = {
+    totalUsers: users.length,
+    validatedUsers: users.filter((u) => u.status === 'validated').length,
+    pendingUsers: users.filter((u) => u.status === 'pending').length,
+    bullsInPlay: users.reduce((acc, u) => acc + u.bulls, 0),
+    totalBets: predictions.length,
+    totalWagered: fightRows.reduce((acc, r) => acc + r.totalPool, 0),
+    commissionEarned: fightRows
+      .filter((r) => r.fight.status === 'settled')
+      .reduce((acc, r) => acc + r.commission, 0),
+    openFights: fights.filter((f) => f.status === 'open').length,
+    closedFights: fights.filter((f) => f.status === 'closed').length,
+    settledFights: fights.filter((f) => f.status === 'settled').length,
+  };
+
   res.render('admin/dashboard', {
     fights,
-    users: db.listUsers(),
-    predictions: db.listPredictions().slice().reverse(),
+    users,
+    predictions,
     stats,
     settlements,
+    fightRows,
+    summary,
     trafficActive: !!keepAliveTimer,
     message: req.query.message || null,
     error: req.query.error || null,
@@ -292,8 +328,13 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Bulls Boxing corriendo en http://localhost:${PORT}`);
-  console.log(`Admin: http://localhost:${PORT}/admin (clave: ${ADMIN_PASSWORD})`);
-  console.log(`Monitor: http://localhost:${PORT}/monitor`);
+db.initCache().then(() => {
+  server.listen(PORT, () => {
+    console.log(`Bulls Boxing corriendo en http://localhost:${PORT}`);
+    console.log(`Admin: http://localhost:${PORT}/admin (clave: ${ADMIN_PASSWORD})`);
+    console.log(`Monitor: http://localhost:${PORT}/monitor`);
+  });
+}).catch((err) => {
+  console.error('Error iniciando DB, el servidor no puede arrancar:', err);
+  process.exit(1);
 });
