@@ -132,3 +132,35 @@ th { background: #fafafa; }
 .dot { width: 18px; height: 18px; border-radius: 50%; display: inline-block; }
 .dot-0 { background: #c0392b; }
 .dot-1 { background: #2980b9; }
+
+.hacker-panel {
+  background: #0b0f0c;
+  border: 1px solid #1f7a3d;
+  color: #39ff6a;
+  font-family: 'Courier New', Courier, monospace;
+  box-shadow: 0 0 12px rgba(57, 255, 106, 0.15);
+}
+.hacker-panel h2 {
+  color: #39ff6a;
+  text-shadow: 0 0 6px rgba(57, 255, 106, 0.6);
+  margin-top: 0;
+}
+.hacker-text { color: #7be8a0; margin: 6px 0; }
+.hacker-text.muted { color: #3f8a5b; }
+.hacker-status { font-weight: 700; padding: 2px 8px; border-radius: 3px; }
+.hacker-status-on { color: #0b0f0c; background: #39ff6a; }
+.hacker-status-off { color: #7be8a0; background: #143820; }
+.hacker-buttons { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+.btn-hacker {
+  background: #0b0f0c;
+  color: #39ff6a;
+  border: 1px solid #39ff6a;
+  border-radius: 4px;
+  padding: 10px 18px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.95em;
+  cursor: pointer;
+}
+.btn-hacker:hover { background: #143820; box-shadow: 0 0 8px rgba(57, 255, 106, 0.5); }
+.btn-hacker-stop { color: #ff5c5c; border-color: #ff5c5c; }
+.btn-hacker-stop:hover { background: #3a1414; box-shadow: 0 0 8px rgba(255, 92, 92, 0.5); }

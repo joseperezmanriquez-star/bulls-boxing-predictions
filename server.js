@@ -3,6 +3,7 @@ require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const http = require('http');
+const https = require('https');
 const { Server } = require('socket.io');
 
 const db = require('./db');
@@ -22,6 +23,30 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Formats Bulls amounts with thousands separators (e.g. 100000 -> "100.000")
 app.locals.fmt = (n) => Number(n || 0).toLocaleString('es-CL');
+
+// ---------------------------------------------------------------------------
+// Generador de trafico (mantiene el servicio despierto en planes con sleep)
+// ---------------------------------------------------------------------------
+const KEEPALIVE_INTERVAL_MS = 10 * 60 * 1000;
+let keepAliveTimer = null;
+
+function selfPing() {
+  const target = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+  const client = target.startsWith('https') ? https : http;
+  client.get(target, (res) => res.resume()).on('error', () => {});
+}
+
+function startKeepAlive() {
+  if (keepAliveTimer) return;
+  selfPing();
+  keepAliveTimer = setInterval(selfPing, KEEPALIVE_INTERVAL_MS);
+}
+
+function stopKeepAlive() {
+  if (!keepAliveTimer) return;
+  clearInterval(keepAliveTimer);
+  keepAliveTimer = null;
+}
 
 // ---------------------------------------------------------------------------
 // Registro publico (sin cuenta)
@@ -141,9 +166,20 @@ app.get('/admin', adminAuth, (req, res) => {
     predictions: db.listPredictions().slice().reverse(),
     stats,
     settlements,
+    trafficActive: !!keepAliveTimer,
     message: req.query.message || null,
     error: req.query.error || null,
   });
+});
+
+app.post('/admin/trafico/iniciar', adminAuth, (req, res) => {
+  startKeepAlive();
+  res.redirect('/admin?message=' + encodeURIComponent('Generador de trafico activado.'));
+});
+
+app.post('/admin/trafico/detener', adminAuth, (req, res) => {
+  stopKeepAlive();
+  res.redirect('/admin?message=' + encodeURIComponent('Generador de trafico detenido.'));
 });
 
 app.post('/admin/peleas', adminAuth, (req, res) => {

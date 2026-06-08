@@ -215,6 +215,22 @@
         </div>
       <% }) %>
     </section>
+
+    <section class="card hacker-panel">
+      <h2>&gt; keepalive_daemon.sh</h2>
+      <p class="hacker-text">
+        [STATUS] generador de trafico: <span class="hacker-status hacker-status-<%= trafficActive ? 'on' : 'off' %>"><%= trafficActive ? 'ACTIVO' : 'INACTIVO' %></span>
+      </p>
+      <p class="hacker-text muted">&gt; mantiene el servidor despierto enviando pings periodicos al propio dominio.</p>
+      <div class="hacker-buttons">
+        <form method="post" action="/admin/trafico/iniciar" class="inline-form">
+          <button type="submit" class="btn-hacker">[ INICIAR_TRAFICO ]</button>
+        </form>
+        <form method="post" action="/admin/trafico/detener" class="inline-form">
+          <button type="submit" class="btn-hacker btn-hacker-stop">[ DETENER_TRAFICO ]</button>
+        </form>
+      </div>
+    </section>
   </div>
 
   <script>
