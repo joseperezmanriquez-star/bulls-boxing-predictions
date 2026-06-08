@@ -61,7 +61,9 @@ app.post('/registro', async (req, res) => {
     return res.render('registro', { error: 'Por favor completa todos los campos obligatorios.' });
   }
   const user = db.createUser({ name, rut, address, email, phone, comments });
-  await mailer.notifyNewRegistration({ user });
+  mailer.notifyNewRegistration({ user }).catch((err) =>
+    console.error('[mailer] Error al notificar registro:', err.message)
+  );
   res.redirect('/espera/' + user.id);
 });
 
@@ -113,7 +115,8 @@ app.post('/apostar/:token', async (req, res) => {
     return renderWith(err.message, null);
   }
 
-  await mailer.notifyPredictionConfirmation({ user: db.getUser(user.id), fight, fighter, bulls: amount });
+  mailer.notifyPredictionConfirmation({ user: db.getUser(user.id), fight, fighter, bulls: amount })
+    .catch((err) => console.error('[mailer] Error al notificar pronostico:', err.message));
   broadcastFightStats(fight.id);
 
   return res.redirect('/monitor');
@@ -238,7 +241,8 @@ app.post('/admin/usuarios/:id/validar', adminAuth, async (req, res) => {
   if (!user) return res.redirect('/admin?error=' + encodeURIComponent('Usuario no encontrado.'));
 
   const link = `${req.protocol}://${req.get('host')}/apostar/${user.accessToken}`;
-  await mailer.notifyAccessGranted({ user, link });
+  mailer.notifyAccessGranted({ user, link })
+    .catch((err) => console.error('[mailer] Error al enviar link de acceso:', err.message));
 
   res.redirect('/admin?message=' + encodeURIComponent(`Usuario ${user.name} validado, se le asignaron ${bulls} Bulls y se envio el link de acceso a su correo.`));
 });
@@ -291,9 +295,9 @@ app.post('/admin/peleas/:id/finalizar', adminAuth, async (req, res) => {
   const allPreds = [...settlement.winners, ...settlement.losers, ...settlement.refunded];
   for (const p of allPreds) {
     if (!p.user) continue;
-    await mailer.notifySettlementResult({
+    mailer.notifySettlementResult({
       user: p.user, fight, fighter: p.fighter, bulls: p.bulls, result: p.result, payout: p.payout,
-    });
+    }).catch((err) => console.error('[mailer] Error al notificar resultado:', err.message));
   }
 
   const msg = fight.noContest
