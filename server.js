@@ -133,14 +133,24 @@ app.post('/apostar/:token', async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// Administracion
+// Administracion — sesion persistente con cookie firmada (HMAC-SHA256)
+// La firma depende de ADMIN_PASSWORD, por lo que cambiar la clave invalida
+// todas las sesiones activas automaticamente.
 // ---------------------------------------------------------------------------
-const adminSessions = new Set();
+const crypto = require('crypto');
+const ADMIN_COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 año en segundos
+
+function adminToken() {
+  return crypto.createHmac('sha256', ADMIN_PASSWORD).update('bulls-admin-session-v1').digest('hex');
+}
+
+function getAdminCookie(req) {
+  const sid = req.headers.cookie && req.headers.cookie.split('; ').find((c) => c.startsWith('admin_sid='));
+  return sid ? sid.split('=')[1] : null;
+}
 
 function adminAuth(req, res, next) {
-  const sid = req.headers.cookie && req.headers.cookie.split('; ').find((c) => c.startsWith('admin_sid='));
-  const token = sid ? sid.split('=')[1] : null;
-  if (token && adminSessions.has(token)) return next();
+  if (getAdminCookie(req) === adminToken()) return next();
   return res.redirect('/admin/login');
 }
 
@@ -152,15 +162,11 @@ app.post('/admin/login', (req, res) => {
   if (req.body.password !== ADMIN_PASSWORD) {
     return res.render('admin/login', { error: 'Clave incorrecta.' });
   }
-  const token = require('crypto').randomBytes(16).toString('hex');
-  adminSessions.add(token);
-  res.setHeader('Set-Cookie', `admin_sid=${token}; HttpOnly; Path=/; SameSite=Lax`);
+  res.setHeader('Set-Cookie', `admin_sid=${adminToken()}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${ADMIN_COOKIE_MAX_AGE}`);
   res.redirect('/admin');
 });
 
 app.get('/admin/logout', (req, res) => {
-  const sid = req.headers.cookie && req.headers.cookie.split('; ').find((c) => c.startsWith('admin_sid='));
-  if (sid) adminSessions.delete(sid.split('=')[1]);
   res.setHeader('Set-Cookie', 'admin_sid=; HttpOnly; Path=/; Max-Age=0');
   res.redirect('/admin/login');
 });
