@@ -264,6 +264,37 @@ th { background: #2a211b; color: #e8b923; text-transform: uppercase; font-size: 
   .dash-grid { grid-template-columns: 1fr; }
 }
 
+.monitor-countdown {
+  font-size: 0.85em;
+  color: #9a8f86;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  min-height: 1.2em;
+}
+
+.apostar-body {
+  background-size: cover;
+  background-position: center 20%;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+}
+
+.monitor-link-btn {
+  display: inline-block;
+  margin-bottom: 20px;
+  background: linear-gradient(120deg, #1f1916, #2a211b);
+  border: 1px solid #e8b923;
+  color: #e8b923;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 0.92em;
+  letter-spacing: 0.5px;
+}
+.monitor-link-btn:hover { background: #e8b923; color: #14100d; }
+
 /* Monitor */
 .monitor-body {
   background-size: cover;

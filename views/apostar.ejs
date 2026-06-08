@@ -5,7 +5,7 @@
   <%- include('partials/head') %>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
+<body class="apostar-body" style="background-image: linear-gradient(180deg, rgba(20,16,13,0.82) 0%, rgba(20,16,13,0.96) 50%), url('/img/gym/hero-fight.jpg');">
   <div class="container">
 
     <div class="user-header">
@@ -16,9 +16,11 @@
     </div>
 
     <div class="alert alert-info">
-      Del total de cada pelea se descuenta una <strong>comision del 15%</strong> antes de repartir entre quienes acertaron.
-      Si nadie apuesta por el peleador contrario, se reembolsan los Bulls sin descuento.
+      Bulls retiene una <strong>comision del 15% sobre el pozo total</strong> de cada pelea antes de repartir las ganancias entre quienes acertaron.
+      Si nadie apuesta por el peleador contrario al tuyo, se te reembolsa el 100% de tus Bulls sin descuento.
     </div>
+
+    <a href="/monitor" target="_blank" class="monitor-link-btn">&#128250; Ver graficos en vivo &rarr;</a>
 
     <% if (message) { %>
       <div class="alert alert-success">&#10003; <%= message %></div>

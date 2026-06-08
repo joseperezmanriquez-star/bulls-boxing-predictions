@@ -108,6 +108,10 @@ function notifyAccessGranted({ user, link }) {
     ``,
     link,
     ``,
+    `IMPORTANTE — Comision Bulls: del pozo total acumulado en cada pelea se descuenta`,
+    `un 15% como comision antes de repartir las ganancias entre quienes acertaron.`,
+    `Si nadie apuesta por el peleador contrario, se reembolsa el 100% sin descuento.`,
+    ``,
     `Este link es personal e intransferible.`,
   ].join('\n');
   return sendMail({ to: user.email, subject, text });
@@ -126,6 +130,8 @@ function notifyPredictionConfirmation({ user, fight, fighter, bulls }) {
     `Saldo restante: ${user.bulls} Bulls`,
     ``,
     `Te avisaremos por correo cuando la pelea finalice con el resultado.`,
+    ``,
+    `Recuerda: Bulls retiene un 15% del pozo total como comision antes de repartir las ganancias.`,
   ].join('\n');
   return sendMail({ to: user.email, subject, text });
 }

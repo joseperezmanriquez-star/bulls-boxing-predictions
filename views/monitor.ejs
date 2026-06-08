@@ -14,8 +14,9 @@
 
   <div class="monitor-wrap">
     <div id="monitorClock" class="monitor-clock"></div>
+    <div id="monitorCountdown" class="monitor-countdown"></div>
     <select id="fightSelect" class="monitor-select"></select>
-    <h1 id="fightTitle" class="monitor-title"><img class="title-glove" src="/img/glove.svg" alt="">Selecciona una pelea</h1>
+    <h1 id="fightTitle" class="monitor-title"><img class="title-glove" src="/img/glove.svg" alt="">Cargando...</h1>
     <div class="monitor-chart-wrap">
       <canvas id="monitorChart" width="640" height="640"></canvas>
     </div>
@@ -34,12 +35,16 @@
     let chart = null;
     let fights = [];
     let currentFightId = null;
+    let currentIndex = 0;
+    let countdownSecs = 60;
+    let countdownTimer = null;
 
     const select = document.getElementById('fightSelect');
     const title = document.getElementById('fightTitle');
     const pctBox = document.getElementById('monitorPercentages');
     const clockBox = document.getElementById('monitorClock');
     const tickerTrack = document.getElementById('tickerTrack');
+    const countdownBox = document.getElementById('monitorCountdown');
 
     function updateClock() {
       const now = new Date();
@@ -49,6 +54,39 @@
     }
     updateClock();
     setInterval(updateClock, 1000);
+
+    function showFight(index) {
+      if (!fights.length) return;
+      currentIndex = ((index % fights.length) + fights.length) % fights.length;
+      currentFightId = fights[currentIndex].id;
+      select.value = currentFightId;
+      socket.emit('subscribe', currentFightId);
+      resetCountdown();
+    }
+
+    function resetCountdown() {
+      countdownSecs = 60;
+      updateCountdown();
+    }
+
+    function updateCountdown() {
+      if (fights.length <= 1) {
+        countdownBox.textContent = '';
+        return;
+      }
+      countdownBox.textContent = 'Siguiente pelea en ' + countdownSecs + 's';
+    }
+
+    function startAutoRotate() {
+      if (countdownTimer) clearInterval(countdownTimer);
+      countdownTimer = setInterval(function () {
+        countdownSecs -= 1;
+        updateCountdown();
+        if (countdownSecs <= 0) {
+          showFight(currentIndex + 1);
+        }
+      }, 1000);
+    }
 
     function renderTicker() {
       const proximas = fights.filter(function (f) { return f.status !== 'settled'; });
@@ -61,41 +99,41 @@
         return '<span class="ticker-item">&#129354; ' + f.fighterA + ' <span class="vs">vs</span> ' + f.fighterB
           + ' &nbsp;&middot;&nbsp; ' + f.date + ' &nbsp;&middot;&nbsp; <span class="ticker-status">' + estado + '</span></span>';
       }).join('<span class="ticker-sep">&#9679;</span>');
-      // Se duplica el contenido para lograr un desplazamiento continuo sin saltos
       tickerTrack.innerHTML = items + '<span class="ticker-sep">&#9679;</span>' + items + '<span class="ticker-sep">&#9679;</span>';
     }
 
     select.addEventListener('change', function () {
-      currentFightId = Number(select.value);
-      requestStats();
+      currentIndex = fights.findIndex(function (f) { return f.id === Number(select.value); });
+      showFight(currentIndex);
     });
-
-    function requestStats() {
-      if (currentFightId) socket.emit('subscribe', currentFightId);
-    }
 
     socket.on('fights', function (list) {
       fights = list;
       select.innerHTML = fights.map(function (f) {
         return '<option value="' + f.id + '">' + f.fighterA + ' vs ' + f.fighterB + ' (' + f.date + ')</option>';
       }).join('');
-      if (fights.length && !currentFightId) {
-        currentFightId = fights[0].id;
-        select.value = currentFightId;
-        requestStats();
+      if (fights.length) {
+        showFight(0);
+        startAutoRotate();
       }
       renderTicker();
     });
 
     socket.on('stats', function (s) {
       if (!s || s.fight.id !== currentFightId) return;
-      title.textContent = s.fight.fighterA + ' vs ' + s.fight.fighterB;
+
+      title.innerHTML = '<img class="title-glove" src="/img/glove.svg" alt="">'
+        + s.fight.fighterA + ' <span style="color:#e8b923;font-size:0.6em;vertical-align:middle;">VS</span> ' + s.fight.fighterB;
+
       const labels = Object.keys(s.totals);
       const values = labels.map(function (l) { return s.totals[l]; });
-      const pcts = labels.map(function (l) { return s.percentages[l]; });
+      const pcts   = labels.map(function (l) { return s.percentages[l]; });
 
       pctBox.innerHTML = labels.map(function (l, i) {
-        return '<div class="monitor-pct-item"><img class="pct-glove pct-glove-' + i + '" src="/img/glove.svg" alt="">' + l + ': <strong>' + pcts[i] + '%</strong> (' + values[i].toLocaleString('es-CL') + ' Bulls)</div>';
+        return '<div class="monitor-pct-item">'
+          + '<img class="pct-glove pct-glove-' + i + '" src="/img/glove.svg" alt="">'
+          + l + ': <strong>' + pcts[i] + '%</strong> (' + values[i].toLocaleString('es-CL') + ' Bulls)'
+          + '</div>';
       }).join('');
 
       if (chart) {
@@ -119,9 +157,6 @@
     });
 
     socket.emit('requestFights');
-
-    // Refresca la ventana completa cada 60 segundos
-    setTimeout(function () { location.reload(); }, 60000);
   </script>
 </body>
 </html>
