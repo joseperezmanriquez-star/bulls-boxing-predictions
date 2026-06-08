@@ -1,8 +1,8 @@
 * { box-sizing: border-box; }
 body {
   font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-  background: #f4f5f7;
-  color: #222;
+  background: radial-gradient(circle at top, #2a211b 0%, #14100d 60%);
+  color: #f1ece6;
   margin: 0;
 }
 .container {
@@ -13,17 +13,53 @@ body {
 .container.wide { max-width: 1100px; }
 .container.narrow { max-width: 480px; }
 
-h1 { margin-top: 0; }
-.lead { color: #444; }
-.muted { color: #888; font-size: 0.9em; }
-.operator-info { border-left: 3px solid #c0392b; padding-left: 10px; margin: 16px 0; }
+h1 {
+  margin-top: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-left: 5px solid #d8261c;
+  padding-left: 14px;
+}
+.lead { color: #cfc6bd; }
+.muted { color: #9a8f86; font-size: 0.9em; }
+.operator-info { border-left: 3px solid #e8b923; padding-left: 10px; margin: 16px 0; color: #cfc6bd; }
+
+.brand-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.brand-bar .tag {
+  background: linear-gradient(120deg, #d8261c, #e8b923);
+  color: #14100d;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.78em;
+}
+.brand-bar .ig-link {
+  color: #e8b923;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.92em;
+  border: 1px solid #e8b923;
+  border-radius: 20px;
+  padding: 4px 14px;
+}
+.brand-bar .ig-link:hover { background: #e8b923; color: #14100d; }
 
 .card {
-  background: #fff;
-  border: 1px solid #e2e2e2;
+  background: #1f1916;
+  border: 1px solid #3a2f28;
+  border-top: 3px solid #d8261c;
   border-radius: 8px;
   padding: 20px;
   margin: 16px 0;
+  color: #f1ece6;
 }
 
 label {
@@ -37,31 +73,37 @@ input, select, textarea {
   width: 100%;
   margin-top: 4px;
   padding: 8px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #4a3c33;
   border-radius: 4px;
   font-size: 1em;
   font-family: inherit;
+  background: #14100d;
+  color: #f1ece6;
 }
+input::placeholder, textarea::placeholder { color: #7a6f66; }
 button {
-  background: #c0392b;
+  background: linear-gradient(120deg, #d8261c, #a31810);
   color: #fff;
   border: none;
   border-radius: 4px;
   padding: 10px 18px;
   font-size: 1em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   cursor: pointer;
 }
-button:hover { background: #a93226; }
-button:disabled { background: #aaa; cursor: not-allowed; }
+button:hover { background: linear-gradient(120deg, #e8b923, #d8261c); color: #14100d; }
+button:disabled { background: #5a5048; cursor: not-allowed; }
 
 .alert {
   padding: 12px 16px;
   border-radius: 6px;
   margin: 16px 0;
 }
-.alert-error { background: #fdecea; color: #a02622; border: 1px solid #f5c6cb; }
-.alert-success { background: #e9f7ef; color: #1e7d39; border: 1px solid #c3e6cb; }
-.alert-info { background: #eaf2fb; color: #1c4e80; border: 1px solid #bcd6f0; }
+.alert-error { background: #3a1414; color: #ff8c82; border: 1px solid #6e231d; }
+.alert-success { background: #16321f; color: #8be3a6; border: 1px solid #28593a; }
+.alert-info { background: #1c2c3a; color: #8fc1ec; border: 1px solid #2c4a66; }
 
 .bet-form { margin-top: 12px; }
 
@@ -74,9 +116,9 @@ table {
 th, td {
   text-align: left;
   padding: 8px 10px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #3a2f28;
 }
-th { background: #fafafa; }
+th { background: #2a211b; color: #e8b923; text-transform: uppercase; font-size: 0.82em; letter-spacing: 0.5px; }
 
 .badge {
   padding: 2px 8px;
@@ -84,34 +126,35 @@ th { background: #fafafa; }
   font-size: 0.8em;
   text-transform: uppercase;
 }
-.badge-pending { background: #fdf3d8; color: #92710a; }
-.badge-validated { background: #e1f5e6; color: #1e7d39; }
-.badge-fight-open { background: #e1f5e6; color: #1e7d39; }
-.badge-fight-closed { background: #fdf3d8; color: #92710a; }
-.badge-fight-settled { background: #e2e3e5; color: #41464b; }
+.badge-pending { background: #4a3a14; color: #f0c95e; }
+.badge-validated { background: #1d3a26; color: #7fe3a3; }
+.badge-fight-open { background: #1d3a26; color: #7fe3a3; }
+.badge-fight-closed { background: #4a3a14; color: #f0c95e; }
+.badge-fight-settled { background: #33302d; color: #c8c0b8; }
 
-.settlement-block { border-top: 1px solid #eee; padding-top: 16px; margin-top: 16px; }
+.settlement-block { border-top: 1px solid #3a2f28; padding-top: 16px; margin-top: 16px; }
 .settlement-block h4 { margin-bottom: 4px; }
-.winners-heading { color: #1e7d39; font-size: 1.1em; }
-.losers-heading { color: #a93226; font-size: 1.1em; }
+.winners-heading { color: #7fe3a3; font-size: 1.1em; }
+.losers-heading { color: #ff8c82; font-size: 1.1em; }
 
-.btn-danger { background: #c0392b; color: #fff; border: none; }
-.btn-danger:hover { background: #a93226; }
+.btn-danger { background: #6e231d; color: #fff; border: none; }
+.btn-danger:hover { background: #8c2c24; }
 
 .inline-form { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
 .inline-form label { margin-bottom: 0; }
 .inline-form input { width: auto; }
 
 .admin-bar { display: flex; justify-content: space-between; align-items: center; }
-.link { color: #c0392b; text-decoration: none; }
+.link { color: #e8b923; text-decoration: none; }
 .tabs { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
-.tabs a { color: #1c4e80; text-decoration: none; font-weight: 600; }
+.tabs a { color: #e8b923; text-decoration: none; font-weight: 600; }
+.tabs a:hover { color: #d8261c; }
 
 .chart-block { display: inline-block; margin: 16px 24px 16px 0; text-align: center; }
 
 /* Monitor */
 .monitor-body {
-  background: #11161d;
+  background: radial-gradient(circle at center, #221a15 0%, #14100d 70%);
   color: #fff;
   height: 100vh;
   display: flex;
@@ -119,7 +162,7 @@ th { background: #fafafa; }
   justify-content: center;
 }
 .monitor-wrap { text-align: center; }
-.monitor-title { font-size: 2.4em; margin: 8px 0; }
+.monitor-title { font-size: 2.4em; margin: 8px 0; text-transform: uppercase; letter-spacing: 1px; color: #e8b923; }
 .monitor-select {
   font-size: 1.1em;
   padding: 8px 14px;
@@ -130,8 +173,8 @@ th { background: #fafafa; }
 .monitor-pct { display: flex; justify-content: center; gap: 32px; margin-top: 16px; font-size: 1.6em; }
 .monitor-pct-item { display: flex; align-items: center; gap: 10px; }
 .dot { width: 18px; height: 18px; border-radius: 50%; display: inline-block; }
-.dot-0 { background: #c0392b; }
-.dot-1 { background: #2980b9; }
+.dot-0 { background: #d8261c; }
+.dot-1 { background: #e8b923; }
 
 .hacker-panel {
   background: #0b0f0c;
