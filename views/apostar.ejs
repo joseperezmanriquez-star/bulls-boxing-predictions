@@ -5,8 +5,12 @@
   <%- include('partials/head') %>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="apostar-body" style="background-image: linear-gradient(180deg, rgba(20,16,13,0.82) 0%, rgba(20,16,13,0.96) 50%), url('/img/gym/hero-fight.jpg');">
-  <div class="container">
+<body class="apostar-body">
+  <video class="apostar-video-bg" autoplay muted loop playsinline>
+    <source src="/video/gym.mp4" type="video/mp4">
+  </video>
+  <div class="apostar-video-overlay"></div>
+  <div class="container" style="position:relative;z-index:1;">
 
     <div class="user-header">
       <div>
