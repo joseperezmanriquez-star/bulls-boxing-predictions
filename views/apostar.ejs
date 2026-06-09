@@ -10,150 +10,159 @@
     <source src="/video/gym.mp4" type="video/mp4">
   </video>
   <div class="apostar-video-overlay"></div>
-  <div class="container" style="position:relative;z-index:1;">
 
-    <div class="user-header">
-      <div>
-        <h1 class="user-greeting">Hola, <%= user.name %></h1>
-        <p class="user-balance">Saldo disponible: <span class="balance-amount"><%= fmt(user.bulls) %> Bulls</span></p>
-      </div>
+  <div style="position:relative;z-index:1;">
+
+    <div class="balance-hero">
+      <p class="balance-hero-name">Hola, <%= user.name %></p>
+      <p class="balance-hero-amount"><%= fmt(user.bulls) %></p>
+      <p class="balance-hero-label">Bulls disponibles</p>
+      <a href="/monitor" target="_blank" class="monitor-link-btn">&#128250; Ver graficos en vivo</a>
     </div>
 
-    <div class="alert alert-info">
-      Bulls retiene una <strong>comision del 15% sobre el pozo total</strong> de cada pelea antes de repartir las ganancias entre quienes acertaron.
-      Si nadie apuesta por el peleador contrario al tuyo, se te reembolsa el 100% de tus Bulls sin descuento.
+    <div class="container">
+
+      <% if (message) { %>
+        <div class="alert alert-success">&#10003; <%= message %></div>
+      <% } %>
+      <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+      <% } %>
+
+      <% if (fights.length === 0) { %>
+        <div class="empty-fights">
+          <p>&#129354;</p>
+          <p>Aun no hay peleas publicadas.</p>
+          <p class="muted">Vuelve a revisar pronto.</p>
+        </div>
+      <% } %>
+
+      <% fights.forEach(function(fight) { %>
+        <%
+          var s = stats[fight.id];
+          var myPreds = userPredictions.filter(function(p){ return p.fightId === fight.id; });
+          var totalA = s ? s.totals[fight.fighterA] : 0;
+          var totalB = s ? s.totals[fight.fighterB] : 0;
+          var total  = totalA + totalB;
+          var pctA   = total > 0 ? Math.round(totalA / total * 1000) / 10 : 0;
+          var pctB   = total > 0 ? Math.round(totalB / total * 1000) / 10 : 0;
+        %>
+        <div class="fight-card card fight-card-<%= fight.status %>">
+
+          <div class="fight-card-header">
+            <div>
+              <h2 class="fight-title"><%= fight.fighterA %> <span class="vs-badge">VS</span> <%= fight.fighterB %></h2>
+              <span class="fight-date">&#128197; <%= fmtDate(fight.date) %></span>
+            </div>
+            <span class="badge badge-fight-<%= fight.status %>">
+              <% if (fight.status === 'open') { %>&#9889; Apuestas abiertas
+              <% } else if (fight.status === 'closed') { %>&#9203; Esperando resultado
+              <% } else { %>&#127942; Finalizada<% } %>
+            </span>
+          </div>
+
+          <div class="fight-card-body">
+
+            <div class="fight-card-left">
+
+              <% if (myPreds.length > 0) { %>
+                <div class="my-preds">
+                  <h4 class="my-preds-title">&#129354; Mis pronosticos</h4>
+                  <table>
+                    <thead><tr><th>A favor de</th><th>Bulls</th><th>Resultado</th></tr></thead>
+                    <tbody>
+                      <% myPreds.forEach(function(p) { %>
+                        <tr>
+                          <td><strong><%= p.fighter %></strong></td>
+                          <td><%= fmt(p.bulls) %></td>
+                          <td>
+                            <% if (!p.result) { %>
+                              <span class="badge badge-pending">En juego</span>
+                            <% } else if (p.result === 'won') { %>
+                              <span class="badge badge-validated">+<%= fmt(p.payout) %> &#127942;</span>
+                            <% } else if (p.result === 'refunded') { %>
+                              <span class="badge badge-pending">Reembolsado</span>
+                            <% } else { %>
+                              <span class="badge badge-fight-settled">Perdiste</span>
+                            <% } %>
+                          </td>
+                        </tr>
+                      <% }) %>
+                    </tbody>
+                  </table>
+                </div>
+              <% } %>
+
+              <% if (fight.status === 'open') { %>
+                <form method="post" action="/apostar/<%= token %>" class="bet-form-inner"
+                  onsubmit="this.querySelector('button[type=submit]').disabled=true; this.querySelector('button[type=submit]').textContent='Registrando...';">
+                  <input type="hidden" name="fightId" value="<%= fight.id %>">
+                  <div class="bet-fighters">
+                    <label class="bet-fighter-option">
+                      <input type="radio" name="fighter" value="<%= fight.fighterA %>" required>
+                      <span><%= fight.fighterA %></span>
+                    </label>
+                    <span class="bet-vs">VS</span>
+                    <label class="bet-fighter-option">
+                      <input type="radio" name="fighter" value="<%= fight.fighterB %>">
+                      <span><%= fight.fighterB %></span>
+                    </label>
+                  </div>
+                  <label class="bet-amount-label">Bulls a arriesgar
+                    <span class="bet-balance-hint">(tenes <%= fmt(user.bulls) %> disponibles)</span>
+                    <input type="number" name="bulls" min="1" max="<%= user.bulls %>" required placeholder="Cantidad">
+                  </label>
+                  <p class="bet-commission-note">&#9432; Bulls retiene el 15% del pozo como comision.</p>
+                  <button type="submit" class="btn-bet" <%= user.bulls <= 0 ? 'disabled' : '' %>>
+                    &#129354; Registrar pronostico
+                  </button>
+                  <% if (user.bulls <= 0) { %>
+                    <p class="muted" style="margin-top:8px;text-align:center;">Sin saldo disponible.</p>
+                  <% } %>
+                </form>
+              <% } else if (fight.status === 'closed') { %>
+                <div class="fight-status-msg fight-status-closed">
+                  &#9203; Apuestas cerradas &mdash; esperando el resultado oficial.
+                </div>
+              <% } else { %>
+                <div class="fight-status-msg fight-status-settled">
+                  <% if (fight.noContest) { %>
+                    &#9989; Pelea sin contrincante &mdash; Bulls reembolsados a todos.
+                  <% } else { %>
+                    &#127942; Gano <strong><%= fight.winner %></strong> &mdash;
+                    Pozo: <%= fmt(fight.totalPool) %> Bulls.
+                  <% } %>
+                </div>
+              <% } %>
+
+            </div>
+
+            <div class="fight-card-right">
+              <h4 class="dist-title">Distribucion de apuestas</h4>
+              <% if (total === 0) { %>
+                <p class="muted" style="text-align:center;padding:24px 0;">Aun no hay apuestas.</p>
+              <% } else { %>
+                <div class="dist-chart-wrap">
+                  <canvas id="chart-fight-<%= fight.id %>"></canvas>
+                </div>
+                <div class="dist-legend">
+                  <div class="dist-leg-item">
+                    <span class="dist-dot dist-dot-a"></span>
+                    <span><%= fight.fighterA %>: <strong><%= pctA %>%</strong> (<%= fmt(totalA) %> Bulls)</span>
+                  </div>
+                  <div class="dist-leg-item">
+                    <span class="dist-dot dist-dot-b"></span>
+                    <span><%= fight.fighterB %>: <strong><%= pctB %>%</strong> (<%= fmt(totalB) %> Bulls)</span>
+                  </div>
+                </div>
+              <% } %>
+            </div>
+
+          </div>
+        </div>
+      <% }) %>
+
     </div>
-
-    <a href="/monitor" target="_blank" class="monitor-link-btn">&#128250; Ver graficos en vivo &rarr;</a>
-
-    <% if (message) { %>
-      <div class="alert alert-success">&#10003; <%= message %></div>
-    <% } %>
-    <% if (error) { %>
-      <div class="alert alert-error"><%= error %></div>
-    <% } %>
-
-    <% if (fights.length === 0) { %>
-      <p class="muted">Todavia no hay peleas publicadas. Vuelve a revisar mas tarde.</p>
-    <% } %>
-
-    <% fights.forEach(function(fight) { %>
-      <%
-        var s = stats[fight.id];
-        var myPreds = userPredictions.filter(function(p){ return p.fightId === fight.id; });
-        var totalA = s ? s.totals[fight.fighterA] : 0;
-        var totalB = s ? s.totals[fight.fighterB] : 0;
-        var total  = totalA + totalB;
-        var pctA   = total > 0 ? Math.round(totalA / total * 1000) / 10 : 0;
-        var pctB   = total > 0 ? Math.round(totalB / total * 1000) / 10 : 0;
-      %>
-      <div class="fight-card card">
-
-        <div class="fight-card-header">
-          <div>
-            <h2 class="fight-title"><%= fight.fighterA %> <span class="vs-badge">VS</span> <%= fight.fighterB %></h2>
-            <span class="muted">Fecha: <%= fight.date %></span>
-          </div>
-          <span class="badge badge-fight-<%= fight.status %>">
-            <% if (fight.status === 'open') { %>Apuestas abiertas
-            <% } else if (fight.status === 'closed') { %>Apuestas cerradas
-            <% } else { %>Finalizada<% } %>
-          </span>
-        </div>
-
-        <div class="fight-card-body">
-
-          <div class="fight-card-left">
-
-            <% if (myPreds.length > 0) { %>
-              <div class="my-preds">
-                <h4 class="my-preds-title">&#129354; Mis pronosticos en esta pelea</h4>
-                <table>
-                  <thead>
-                    <tr><th>Pronostico por</th><th>Bulls</th><th>Resultado</th></tr>
-                  </thead>
-                  <tbody>
-                    <% myPreds.forEach(function(p) { %>
-                      <tr>
-                        <td><strong><%= p.fighter %></strong></td>
-                        <td><%= fmt(p.bulls) %></td>
-                        <td>
-                          <% if (!p.result) { %>
-                            <span class="badge badge-pending">En juego</span>
-                          <% } else if (p.result === 'won') { %>
-                            <span class="badge badge-validated">Ganaste +<%= fmt(p.payout) %></span>
-                          <% } else if (p.result === 'refunded') { %>
-                            <span class="badge badge-pending">Reembolsado</span>
-                          <% } else { %>
-                            <span class="badge badge-fight-settled">Perdiste</span>
-                          <% } %>
-                        </td>
-                      </tr>
-                    <% }) %>
-                  </tbody>
-                </table>
-              </div>
-            <% } %>
-
-            <% if (fight.status === 'open') { %>
-              <form method="post" action="/apostar/<%= token %>" class="bet-form-inner card">
-                <input type="hidden" name="fightId" value="<%= fight.id %>">
-                <label>Pronostico a favor de
-                  <select name="fighter" required>
-                    <option value="<%= fight.fighterA %>"><%= fight.fighterA %></option>
-                    <option value="<%= fight.fighterB %>"><%= fight.fighterB %></option>
-                  </select>
-                </label>
-                <label>Bulls a arriesgar (disponibles: <%= fmt(user.bulls) %>)
-                  <input type="number" name="bulls" min="1" max="<%= user.bulls %>" required placeholder="Cantidad de Bulls">
-                </label>
-                <button type="submit" <%= user.bulls <= 0 ? 'disabled' : '' %>>
-                  &#129354; Registrar pronostico
-                </button>
-                <% if (user.bulls <= 0) { %>
-                  <p class="muted" style="margin-top:8px;">Sin saldo disponible.</p>
-                <% } %>
-              </form>
-            <% } else if (fight.status === 'closed') { %>
-              <div class="alert alert-info" style="margin-top:12px;">Apuestas cerradas. Esperando el resultado oficial.</div>
-            <% } else { %>
-              <div class="alert alert-success" style="margin-top:12px;">
-                <% if (fight.noContest) { %>
-                  Pelea sin contrincante &mdash; Bulls reembolsados a todos.
-                <% } else { %>
-                  Gano <strong><%= fight.winner %></strong>.
-                  Pozo total: <%= fmt(fight.totalPool) %> Bulls.
-                <% } %>
-              </div>
-            <% } %>
-
-          </div>
-
-          <div class="fight-card-right">
-            <h4 class="dist-title">Distribucion de Bulls</h4>
-            <% if (total === 0) { %>
-              <p class="muted" style="text-align:center;padding:24px 0;">Aun no hay apuestas en esta pelea.</p>
-            <% } else { %>
-              <div class="dist-chart-wrap">
-                <canvas id="chart-fight-<%= fight.id %>" width="220" height="220"></canvas>
-              </div>
-              <div class="dist-legend">
-                <div class="dist-leg-item">
-                  <span class="dist-dot dist-dot-a"></span>
-                  <span><%= fight.fighterA %>: <strong><%= pctA %>%</strong> (<%= fmt(totalA) %> Bulls)</span>
-                </div>
-                <div class="dist-leg-item">
-                  <span class="dist-dot dist-dot-b"></span>
-                  <span><%= fight.fighterB %>: <strong><%= pctB %>%</strong> (<%= fmt(totalB) %> Bulls)</span>
-                </div>
-              </div>
-            <% } %>
-          </div>
-
-        </div>
-      </div>
-    <% }) %>
-
   </div>
 
   <script>
@@ -186,8 +195,9 @@
           }],
         },
         options: {
-          responsive: false,
-          cutout: '62%',
+          responsive: true,
+          maintainAspectRatio: true,
+          cutout: '60%',
           plugins: { legend: { display: false } },
         },
       });

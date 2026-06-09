@@ -23,6 +23,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Formats Bulls amounts with thousands separators (e.g. 100000 -> "100.000")
 app.locals.fmt = (n) => Number(n || 0).toLocaleString('es-CL');
+app.locals.fmtDate = (d) => {
+  if (!d) return '';
+  const [y, m, day] = d.split('-');
+  const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return `${Number(day)} ${months[Number(m) - 1]} ${y}`;
+};
 
 // ---------------------------------------------------------------------------
 // Generador de trafico (mantiene el servicio despierto en planes con sleep)

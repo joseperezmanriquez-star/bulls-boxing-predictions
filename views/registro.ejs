@@ -5,22 +5,21 @@
   <%- include('partials/head') %>
 </head>
 <body>
-  <section class="hero hero-photo" style="background-image: linear-gradient(180deg, rgba(20,16,13,0.55) 0%, rgba(20,16,13,0.78) 60%, #14100d 100%), url('/img/gym/hero-fight.jpg');">
+  <section class="hero hero-photo" style="background-image: linear-gradient(180deg, rgba(20,16,13,0.50) 0%, rgba(20,16,13,0.75) 55%, #14100d 100%), url('/img/gym/hero-fight.jpg');">
     <div class="hero-content">
       <div class="brand-bar">
         <span class="tag">&#129354; Bulls Training &mdash; La Serena / Coquimbo</span>
         <a class="ig-link" href="https://www.instagram.com/bulls_training/" target="_blank" rel="noopener">&#128247; @bulls_training</a>
       </div>
-      <p class="hero-kicker">Pronosticos de Boxeo</p>
+      <p class="hero-kicker">Plataforma de Pronosticos de Boxeo</p>
       <h1 class="hero-title">
         Entra al ring.<br>
         Confia en tu olfato.<br>
         <span class="accent">Gana con Bulls.</span>
       </h1>
       <p class="hero-sub">
-        Cada pronostico es un golpe. Cada acierto, una victoria. Registrate gratis,
-        entrena tu instinto para el boxeo y vive cada pelea sintiendo la misma garra
-        de quien entrena para subir al cuadrilatero.
+        Cada pronostico es un golpe. Cada acierto, una victoria. Registrate,
+        entrena tu instinto y vive cada pelea con la misma garra de quien sube al cuadrilatero.
       </p>
       <a href="#form-registro" class="btn-cta">&#129354; Quiero participar ahora</a>
     </div>
@@ -28,19 +27,19 @@
 
   <section class="spotlight">
     <div class="spotlight-card">
-      <img src="/img/gym/champion.jpg" alt="Campeon de Bulls Training con su entrenador y cinturon de campeon">
+      <img src="/img/gym/champion.jpg" alt="Campeon de Bulls Training">
       <div class="spotlight-text">
         <p class="spotlight-kicker">Hecho en Bulls Training</p>
-        <h3>Asi se forjan los campeones en La Serena / Coquimbo</h3>
-        <p class="muted">Cada pronostico que haces en esta plataforma nace del mismo gimnasio donde se entrenan peleadores reales, rumbo al cinturon.</p>
+        <h3>Asi se forjan los campeones en La Serena</h3>
+        <p class="muted">Pronostica sobre peleadores reales que se entrenan en este gimnasio, camino al cinturon.</p>
       </div>
     </div>
     <div class="spotlight-card reverse">
-      <img src="/img/gym/gym-ring.jpg" alt="Cuadrilatero del gimnasio Bulls Training">
+      <img src="/img/gym/gym-ring.jpg" alt="Cuadrilatero Bulls Training">
       <div class="spotlight-text">
         <p class="spotlight-kicker">El cuadrilatero real</p>
-        <h3>Las peleas que pronosticas suceden en un ring como este</h3>
-        <p class="muted">Costales, sogas, sudor y disciplina: la energia de Bulls Training detras de cada pronostico que registras.</p>
+        <h3>Las peleas que pronosticas suceden aqui</h3>
+        <p class="muted">Costales, sogas, sudor y disciplina: la energia de Bulls Training detras de cada pronostico.</p>
       </div>
     </div>
   </section>
@@ -50,42 +49,67 @@
       <div class="alert alert-error"><%= error %></div>
     <% } %>
 
-    <p class="muted operator-info">
-      Esta plataforma de pronosticos es operada por <strong>INAREJO Y FUENTES SpA</strong>
-      (RUT 78.078.914-K). Contacto: Infobullstraining@gmail.com
-    </p>
+    <div class="steps-bar">
+      <div class="step-item step-active">
+        <div class="step-circle">1</div>
+        <span class="step-label">Completa el formulario</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle">2</div>
+        <span class="step-label">Transfiere los Bulls</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        <span class="step-label">Recibe tu link de acceso</span>
+      </div>
+    </div>
 
-    <h2 id="form-registro" class="form-heading">&#129354; Tu lugar en el ring te espera &mdash; completa tus datos</h2>
-    <form method="post" action="/registro" class="card">
+    <h2 id="form-registro" class="form-heading">&#129354; Completa tus datos</h2>
+
+    <form method="post" action="/registro" class="card" onsubmit="this.querySelector('button[type=submit]').disabled=true; this.querySelector('button[type=submit]').textContent='Enviando...';">
       <label>Nombre completo
-        <input type="text" name="name" required>
+        <input type="text" name="name" required autocomplete="name">
       </label>
       <label>RUT
-        <input type="text" name="rut" required placeholder="12.345.678-9">
+        <input type="text" name="rut" required placeholder="12.345.678-9" autocomplete="off">
       </label>
       <label>Direccion
-        <input type="text" name="address" required>
+        <input type="text" name="address" required autocomplete="street-address">
       </label>
       <label>Correo electronico
-        <input type="email" name="email" required>
+        <input type="email" name="email" required autocomplete="email">
       </label>
       <label>Telefono
-        <input type="tel" name="phone" required>
+        <input type="tel" name="phone" required autocomplete="tel" placeholder="+56 9 XXXX XXXX">
       </label>
       <label>Comentarios (opcional)
-        <textarea name="comments" rows="3" placeholder="Cualquier comentario que quieras dejarnos..."></textarea>
+        <textarea name="comments" rows="3" placeholder="Dejanos saber cuanto quieres participar..."></textarea>
       </label>
-      <div class="transfer-info">
-        <p>Transferir y adjuntar Comprobante al Whatsapp +56 9 9065 5586</p>
-        <p>INAREJO Y FUENTES SpA</p>
-        <p>78.078.914-K</p>
-        <p>Banco de Chile</p>
-        <p>Cuenta Corriente</p>
-        <p>00-122-15632-03</p>
-        <p>Infobullstraining@gmail.com</p>
+
+      <div class="transfer-card">
+        <div class="transfer-card-title">&#128197; Paso 2 &mdash; Transfiere los Bulls</div>
+        <p class="transfer-card-desc">Una vez enviado el formulario, realiza la transferencia con el monto de Bulls que deseas y envia el comprobante por WhatsApp.</p>
+        <div class="transfer-grid">
+          <div class="transfer-row"><span class="transfer-label">Empresa</span><span class="transfer-value">INAREJO Y FUENTES SpA</span></div>
+          <div class="transfer-row"><span class="transfer-label">RUT</span><span class="transfer-value">78.078.914-K</span></div>
+          <div class="transfer-row"><span class="transfer-label">Banco</span><span class="transfer-value">Banco de Chile</span></div>
+          <div class="transfer-row"><span class="transfer-label">Tipo</span><span class="transfer-value">Cuenta Corriente</span></div>
+          <div class="transfer-row"><span class="transfer-label">N&deg; cuenta</span><span class="transfer-value tf-highlight">00-122-15632-03</span></div>
+          <div class="transfer-row"><span class="transfer-label">Correo</span><span class="transfer-value">Infobullstraining@gmail.com</span></div>
+        </div>
+        <a href="https://wa.me/56990655586" target="_blank" rel="noopener" class="whatsapp-btn">
+          &#128172; Enviar comprobante por WhatsApp
+        </a>
       </div>
-      <button type="submit">Enviar mis datos</button>
+
+      <button type="submit">&#129354; Enviar mis datos</button>
     </form>
+
+    <p class="muted operator-info" style="margin-top:24px;">
+      Plataforma operada por <strong>INAREJO Y FUENTES SpA</strong> &mdash; RUT 78.078.914-K &mdash; Contacto: Infobullstraining@gmail.com
+    </p>
   </div>
 </body>
 </html>

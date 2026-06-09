@@ -14,8 +14,8 @@
 
   <div class="monitor-wrap">
     <div id="monitorClock" class="monitor-clock"></div>
-    <div id="monitorCountdown" class="monitor-countdown"></div>
-    <select id="fightSelect" class="monitor-select"></select>
+    <div id="fightDots" class="fight-dots"></div>
+    <select id="fightSelect" class="monitor-select monitor-select-hidden"></select>
     <h1 id="fightTitle" class="monitor-title"><img class="title-glove" src="/img/glove.svg" alt="">Cargando...</h1>
     <div class="monitor-chart-wrap">
       <canvas id="monitorChart"></canvas>
@@ -44,7 +44,17 @@
     const pctBox = document.getElementById('monitorPercentages');
     const clockBox = document.getElementById('monitorClock');
     const tickerTrack = document.getElementById('tickerTrack');
-    const countdownBox = document.getElementById('monitorCountdown');
+    const dotsBox = document.getElementById('fightDots');
+
+    function renderDots() {
+      if (fights.length <= 1) { dotsBox.innerHTML = ''; return; }
+      dotsBox.innerHTML = fights.map(function(f, i) {
+        return '<span class="fight-dot' + (i === currentIndex ? ' fight-dot-active' : '') + '" data-i="' + i + '"></span>';
+      }).join('');
+      dotsBox.querySelectorAll('.fight-dot').forEach(function(d) {
+        d.addEventListener('click', function() { showFight(Number(d.dataset.i)); });
+      });
+    }
 
     function updateClock() {
       const now = new Date();
@@ -61,21 +71,15 @@
       currentFightId = fights[currentIndex].id;
       select.value = currentFightId;
       socket.emit('subscribe', currentFightId);
+      renderDots();
       resetCountdown();
     }
 
     function resetCountdown() {
       countdownSecs = 60;
-      updateCountdown();
     }
 
-    function updateCountdown() {
-      if (fights.length <= 1) {
-        countdownBox.textContent = '';
-        return;
-      }
-      countdownBox.textContent = 'Siguiente pelea en ' + countdownSecs + 's';
-    }
+    function updateCountdown() { /* dots handle progress visually */ }
 
     function startAutoRotate() {
       if (countdownTimer) clearInterval(countdownTimer);

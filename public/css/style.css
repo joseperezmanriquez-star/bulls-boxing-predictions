@@ -5,6 +5,10 @@ body {
   color: #f1ece6;
   margin: 0;
 }
+h1, h2, h3, .hero-title, .monitor-title, .fight-title, .form-heading {
+  font-family: 'Barlow Condensed', -apple-system, sans-serif;
+  letter-spacing: 0.5px;
+}
 .container {
   max-width: 760px;
   margin: 0 auto;
@@ -623,4 +627,290 @@ th { background: #2a211b; color: #e8b923; text-transform: uppercase; font-size: 
   .spotlight-card, .spotlight-card.reverse { flex-direction: column; }
   .spotlight-card img { width: 100%; min-height: 200px; }
   .spotlight { margin-top: -28px; }
+}
+
+/* =====================================================================
+   STEPS — indicador de pasos en registro
+   ===================================================================== */
+.steps-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 32px 0 20px;
+  flex-wrap: nowrap;
+}
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+.step-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #3a2f28;
+  background: #1f1916;
+  color: #9a8f86;
+  font-weight: 700;
+  font-size: 0.95em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+.step-active .step-circle {
+  background: linear-gradient(120deg, #d8261c, #a31810);
+  border-color: #d8261c;
+  color: #fff;
+}
+.step-label {
+  font-size: 0.72em;
+  color: #9a8f86;
+  text-align: center;
+  max-width: 80px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.step-active .step-label { color: #f1ece6; }
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: #3a2f28;
+  min-width: 24px;
+  max-width: 60px;
+  margin-bottom: 22px;
+}
+
+/* =====================================================================
+   TRANSFER CARD — datos bancarios en registro
+   ===================================================================== */
+.transfer-card {
+  background: linear-gradient(135deg, #1a130e, #2a1f18);
+  border: 1px solid #e8b923;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+}
+.transfer-card-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.05em;
+  font-weight: 700;
+  color: #e8b923;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.transfer-card-desc {
+  color: #cfc6bd;
+  font-size: 0.88em;
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+.transfer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  margin-bottom: 16px;
+}
+.transfer-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.transfer-label {
+  font-size: 0.72em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9a8f86;
+}
+.transfer-value {
+  font-size: 0.92em;
+  color: #f1ece6;
+  font-weight: 500;
+}
+.tf-highlight {
+  color: #e8b923;
+  font-weight: 700;
+  font-size: 1em;
+  letter-spacing: 0.5px;
+}
+.whatsapp-btn {
+  display: block;
+  text-align: center;
+  background: linear-gradient(120deg, #1a7a3a, #25a550);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.92em;
+  margin-top: 4px;
+}
+.whatsapp-btn:hover { filter: brightness(1.1); }
+
+@media (max-width: 520px) {
+  .transfer-grid { grid-template-columns: 1fr; }
+  .steps-bar { gap: 0; }
+  .step-label { font-size: 0.65em; max-width: 68px; }
+}
+
+/* =====================================================================
+   BALANCE HERO — saldo prominente en pagina de apuestas
+   ===================================================================== */
+.balance-hero {
+  text-align: center;
+  padding: 40px 20px 28px;
+  background: linear-gradient(180deg, rgba(20,16,13,0.0) 0%, rgba(20,16,13,0.6) 100%);
+  border-bottom: 1px solid #3a2f28;
+  margin-bottom: 0;
+}
+.balance-hero-name {
+  font-size: 1em;
+  color: #cfc6bd;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0 0 6px;
+}
+.balance-hero-amount {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(2.8em, 10vw, 5em);
+  font-weight: 800;
+  color: #e8b923;
+  margin: 0;
+  line-height: 1;
+  text-shadow: 0 0 30px rgba(232,185,35,0.35);
+}
+.balance-hero-label {
+  font-size: 0.82em;
+  color: #9a8f86;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 4px 0 16px;
+}
+
+/* =====================================================================
+   FIGHT CARDS — estado visual por color de borde
+   ===================================================================== */
+.fight-card-open   { border-top-color: #28a745; }
+.fight-card-closed { border-top-color: #e8b923; }
+.fight-card-settled{ border-top-color: #9a8f86; }
+
+.fight-date {
+  font-size: 0.85em;
+  color: #9a8f86;
+  margin-top: 4px;
+  display: block;
+}
+
+/* Seleccion de peleador con radio buttons visuales */
+.bet-fighters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.bet-fighter-option {
+  flex: 1;
+  min-width: 100px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #14100d;
+  border: 2px solid #3a2f28;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: border-color 0.15s, background 0.15s;
+  margin-bottom: 0;
+}
+.bet-fighter-option input[type=radio] { accent-color: #d8261c; width: 16px; height: 16px; flex-shrink: 0; }
+.bet-fighter-option:has(input:checked) { border-color: #d8261c; background: #2a1410; }
+.bet-vs { color: #e8b923; font-weight: 700; font-size: 0.85em; flex-shrink: 0; }
+
+.bet-amount-label { font-weight: 600; font-size: 0.92em; }
+.bet-balance-hint { color: #9a8f86; font-size: 0.82em; font-weight: 400; display: block; margin-bottom: 4px; }
+.bet-commission-note { font-size: 0.8em; color: #9a8f86; margin: 8px 0 12px; }
+
+.btn-bet {
+  width: 100%;
+  background: linear-gradient(120deg, #d8261c, #a31810);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 13px;
+  font-size: 1em;
+  font-weight: 700;
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  min-height: 46px;
+}
+.btn-bet:hover { background: linear-gradient(120deg, #e8b923, #d8261c); color: #14100d; }
+.btn-bet:disabled { background: #3a2f28; cursor: not-allowed; color: #9a8f86; }
+
+.bet-form-inner {
+  background: rgba(20,16,13,0.7);
+  border: 1px solid #3a2f28;
+  border-radius: 10px;
+  padding: 18px;
+  backdrop-filter: blur(4px);
+}
+
+.fight-status-msg {
+  padding: 14px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.fight-status-closed { background: #1c2c3a; color: #8fc1ec; border: 1px solid #2c4a66; }
+.fight-status-settled { background: #16321f; color: #8be3a6; border: 1px solid #28593a; }
+
+.empty-fights {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 1.2em;
+  color: #9a8f86;
+}
+.empty-fights p:first-child { font-size: 2.5em; }
+
+/* Donut chart responsive */
+.dist-chart-wrap {
+  width: 100%;
+  max-width: 200px;
+}
+.dist-chart-wrap canvas { width: 100% !important; height: auto !important; }
+
+/* =====================================================================
+   MONITOR — dots y select oculto
+   ===================================================================== */
+.monitor-select-hidden { display: none; }
+
+.fight-dots {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 10px;
+  min-height: 14px;
+}
+.fight-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+}
+.fight-dot-active {
+  background: #e8b923;
+  transform: scale(1.3);
+  box-shadow: 0 0 8px rgba(232,185,35,0.6);
 }
