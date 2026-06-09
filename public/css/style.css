@@ -630,6 +630,29 @@ th { background: #2a211b; color: #e8b923; text-transform: uppercase; font-size: 
 }
 
 /* =====================================================================
+   LOGO
+   ===================================================================== */
+.site-logo {
+  width: 110px;
+  height: auto;
+  display: block;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 4px 16px rgba(0,0,0,0.6));
+}
+.balance-hero-logo {
+  width: 80px;
+  height: auto;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 2px 10px rgba(0,0,0,0.5));
+}
+.monitor-logo {
+  width: clamp(60px, 8vw, 100px);
+  height: auto;
+  margin-bottom: 6px;
+  filter: drop-shadow(0 2px 12px rgba(0,0,0,0.7));
+}
+
+/* =====================================================================
    STEPS — indicador de pasos en registro
    ===================================================================== */
 .steps-bar {
